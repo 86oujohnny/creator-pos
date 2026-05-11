@@ -26,7 +26,6 @@ Open directly:
 index.html
 ````
 
-或使用 GitHub Pages：
 Or use GitHub Pages:
 
 ```txt
