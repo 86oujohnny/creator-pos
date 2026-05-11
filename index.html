@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">  
+  <title>Creator POS</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+  <h2>
+    總營收：<span id="money">0</span> 元 
+    <button id="undoButton">撤銷上一筆</button>
+    <button id="exportCsvButton">匯出 CSV</button>
+    <button id="resetAllDataButton">重置今日資料</button>
+  </h2>
+
+  <p>福袋模式：<span id="luckyBagModeText">關閉</span></p>
+
+  <h2>目前福袋內容</h2>
+  <ul id="luckyBagContentsList"></ul>
+
+  <h2>本次銷售</h2>
+  <ul id="currentSaleList"></ul>
+
+  <p>本次小計：<span id="currentSaleTotal">0</span> 元</p>
+
+  <button id="startLuckyBagButton">開始編輯福袋</button>
+  <button id="finishLuckyBagButton">完成福袋</button>
+  <button id="cancelLuckyBagButton">取消福袋</button>
+  <button id="checkoutButton">結帳本次銷售</button>
+  <button id="clearCurrentSaleButton">清空本次銷售</button>
+
+  <h2>商品</h2>
+  <div id="productArea"></div>
+
+  <h2>庫存狀態</h2>
+  <div id="stockArea"></div>
+
+  <h2>今日銷售紀錄</h2>
+  <ul id="salesLogList"></ul>
+
+<script src="products.js?v=1"></script>
+<script src="state.js?v=1"></script>
+<script src="dom.js?v=1"></script>
+<script src="bundle.js?v=1"></script>
+<script src="render.js?v=1"></script>
+<script src="luckyBag.js?v=1"></script>
+<script src="sales.js?v=1"></script>
+<script src="storage.js?v=1"></script>
+<script src="script.js?v=1"></script>
+</body>
+</html>
+
