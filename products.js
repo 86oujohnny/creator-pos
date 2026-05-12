@@ -15,9 +15,23 @@ const products = [
     name: "噗嘰",
     price: 160,
     variants: [
-      { name: "飢餓狐", stock: 10 },
-      { name: "生氣狐", stock: 10 },
-      { name: "生氣伊布", stock: 10 }
+     {
+      name: "飢餓狐",
+      stock: 10,
+      image: "images/puji_hungry_fox.jpg"
+     },
+
+     {
+      name: "生氣狐",
+      stock: 10,
+      image: "images/puji_angry_fox.jpg"
+     },
+
+     {
+      name: "生氣伊布",
+      stock: 10,
+      image: "images/puji_angry_eevee.jpg"
+     }
     ]
   },
 
@@ -28,18 +42,72 @@ const products = [
     bundleCount: 3,
     bundlePrice: 300,
     variants: [
-      { name: "悠閒狐", stock: 10 },
-      { name: "鹿", stock: 10 },
-      { name: "哭哭狐", stock: 10 },
-      { name: "愛心狐", stock: 10 },
-      { name: "發瘋狐", stock: 10 },
-      { name: "生氣狐", stock: 10 },
-      { name: "貪吃狐", stock: 10 },
-      { name: "伊布", stock: 10 },
-      { name: "月伊布", stock: 10 },
-      { name: "仙子伊布", stock: 10 },
-      { name: "冰伊布", stock: 10 }
-    ]
+  {
+    name: "悠閒狐",
+    stock: 10,
+    image: "images/acrylic_stand_relaxed_fox.jpg"
+  },
+
+  {
+    name: "鹿",
+    stock: 10,
+    image: "images/acrylic_stand_deer.jpg"
+  },
+
+  {
+    name: "哭哭狐",
+    stock: 10,
+    image: "images/acrylic_stand_crying_fox.jpg"
+  },
+
+  {
+    name: "愛心狐",
+    stock: 10,
+    image: "images/acrylic_stand_heart_fox.jpg"
+  },
+
+  {
+    name: "發瘋狐",
+    stock: 10,
+    image: "images/acrylic_stand_crazy_fox.jpg"
+  },
+
+  {
+    name: "生氣狐",
+    stock: 10,
+    image: "images/acrylic_stand_angry_fox.jpg"
+  },
+
+  {
+    name: "貪吃狐",
+    stock: 10,
+    image: "images/acrylic_stand_hungry_fox.jpg"
+  },
+
+  {
+    name: "伊布",
+    stock: 10,
+    image: "images/acrylic_stand_eevee.jpg"
+  },
+
+  {
+    name: "月伊布",
+    stock: 10,
+    image: "images/acrylic_stand_umbreon.jpg"
+  },
+
+  {
+    name: "仙子伊布",
+    stock: 10,
+    image: "images/acrylic_stand_sylveon.jpg"
+  },
+
+  {
+    name: "冰伊布",
+    stock: 10,
+    image: "images/acrylic_stand_glaceon.jpg"
+  }
+]
   },
 
   {
