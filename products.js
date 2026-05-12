@@ -10,30 +10,6 @@ const products = [
     variants: []
   },
 
-  {
-    id: "puji",
-    name: "噗嘰",
-    price: 160,
-    variants: [
-     {
-      name: "飢餓狐",
-      stock: 10,
-      image: "images/puji_hungry_fox.jpg"
-     },
-
-     {
-      name: "生氣狐",
-      stock: 10,
-      image: "images/puji_angry_fox.jpg"
-     },
-
-     {
-      name: "生氣伊布",
-      stock: 10,
-      image: "images/puji_angry_eevee.jpg"
-     }
-    ]
-  },
 
   {
     id: "acrylic_stand",
@@ -222,6 +198,30 @@ const products = [
           "色違仙子伊布"
         ]
       }
+    ]
+  },
+  {
+    id: "puji",
+    name: "噗嘰",
+    price: 160,
+    variants: [
+     {
+      name: "飢餓狐",
+      stock: 10,
+      image: "images/puji_hungry_fox.jpg"
+     },
+
+     {
+      name: "生氣狐",
+      stock: 10,
+      image: "images/puji_angry_fox.jpg"
+     },
+
+     {
+      name: "生氣伊布",
+      stock: 10,
+      image: "images/puji_angry_eevee.jpg"
+     }
     ]
   },
 
