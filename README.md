@@ -1,6 +1,7 @@
 ````md
 ## Version
-Current version: `0.1.1`
+Current version: `0.1.2`
+refactor storage for local and future cloud data
 # Creator POS
 
 簡易同人場 POS 系統。  
