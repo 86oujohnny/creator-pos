@@ -1,6 +1,6 @@
 ````md
 ## Version
-Current version: `0.1.0`
+Current version: `0.1.1`
 # Creator POS
 
 簡易同人場 POS 系統。  
