@@ -98,6 +98,45 @@ function getSnapshotStock(snapshot, productId, variantName) {
 function escapeCsvCell(cell) {
   return `"${String(cell).replaceAll('"', '""')}"`;
 }
+// ===== 下載 CSV 檔案 =====
+function downloadCsvFile(blob, fileName) {
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  URL.revokeObjectURL(url);
+}
+
+function exportCsvFile(blob) {
+  const file = new File(
+    [blob],
+    "sales_log.csv",
+    { type: "text/csv;charset=utf-8;" }
+  );
+
+  if (
+    navigator.canShare &&
+    navigator.canShare({ files: [file] })
+  ) {
+    navigator.share({
+      files: [file],
+      title: "sales_log"
+    }).catch(error => {
+      console.log("分享失敗，改用下載", error);
+      downloadCsvFile(blob, "sales_log.csv");
+    });
+
+    return;
+  }
+
+  downloadCsvFile(blob, "sales_log.csv");
+}
 // ===== 匯出銷售紀錄 CSV =====
 function exportSalesLogToCSV() {
   if (salesLog.length === 0) {
@@ -167,14 +206,7 @@ function exportSalesLogToCSV() {
     type: "text/csv;charset=utf-8;"
   });
 
-  const url = URL.createObjectURL(blob);
-
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "sales_log.csv";
-  link.click();
-
-  URL.revokeObjectURL(url);
+  exportCsvFile(blob);
 }
 // ===== 重置所有資料 =====
 function resetAllData() {
