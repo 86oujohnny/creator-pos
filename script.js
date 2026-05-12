@@ -1,5 +1,5 @@
 // ===== 初始化 =====
-loadLocalData();
+loadData();
 renderAll();
 
 undoButton?.addEventListener("click", undoLastSale);

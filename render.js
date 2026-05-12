@@ -153,8 +153,29 @@ function createVariantButtons(card, product) {
     product.variants.forEach(variant => {
       const button = document.createElement("button");
 
-      button.textContent =
-        `${variant.name}（庫存 ${variant.stock}）`;
+button.classList.add("variant-button");
+
+button.innerHTML = `
+  ${
+    variant.image
+      ? `
+      <img
+        src="${variant.image}"
+        class="variant-image"
+        alt="${variant.name}"
+      >
+      `
+      : ""
+  }
+
+  <div>
+    ${variant.name}
+  </div>
+
+  <div>
+    庫存 ${variant.stock}
+  </div>
+`;
 
       button.addEventListener("click", () => {
         addToCurrentSale(product, variant.name);
@@ -182,13 +203,28 @@ function createProductCard(product) {
   const card = document.createElement("div");
 
   card.innerHTML = `
-    <h3>${product.name} 價格：${product.price}元</h3>
-    ${
-      product.bundlePrice
-        ? `<p>優惠：${product.bundleCount}個 ${product.bundlePrice}元</p>`
-        : ""
-    }
-  `;
+  <h3>${product.name}</h3>
+
+  <p>價格：${product.price}元</p>
+
+  ${
+    product.image
+      ? `
+      <img
+        src="${product.image}"
+        alt="${product.name}"
+        class="product-image"
+      >
+      `
+      : ""
+  }
+
+  ${
+    product.bundlePrice
+      ? `<p>優惠：${product.bundleCount}個 ${product.bundlePrice}元</p>`
+      : ""
+  }
+`;
 
   createSpecialBundleButtons(card, product);
   createVariantButtons(card, product);

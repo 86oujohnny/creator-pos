@@ -49,22 +49,91 @@ const products = [
     bundleCount: 3,
     bundlePrice: 200,
 
-    variants: [
-      { name: "正常狐", stock: 10 },
-      { name: "瞇眼狐", stock: 10 },
-      { name: "不爽狐", stock: 10 },
-      { name: "伊布", stock: 10 },
-      { name: "火伊布", stock: 10 },
-      { name: "雷伊布", stock: 10 },
-      { name: "水伊布", stock: 10 },
-      { name: "月伊布", stock: 10 },
-      { name: "色違月伊布", stock: 10 },
-      { name: "太陽伊布", stock: 10 },
-      { name: "冰伊布", stock: 10 },
-      { name: "葉伊布", stock: 10 },
-      { name: "仙子伊布", stock: 10 },
-      { name: "色違仙子伊布", stock: 10 }
-    ],
+   variants: [
+  {
+    name: "正常狐",
+    stock: 10,
+    image: "images/butt_clip_normal_fox.jpg"
+  },
+
+  {
+    name: "瞇眼狐",
+    stock: 10,
+    image: "images/butt_clip_sleepy_fox.jpg"
+  },
+
+  {
+    name: "不爽狐",
+    stock: 10,
+    image: "images/butt_clip_angry_fox.jpg"
+  },
+
+  {
+    name: "伊布",
+    stock: 10,
+    image: "images/butt_clip_eevee.jpg"
+  },
+
+  {
+    name: "火伊布",
+    stock: 10,
+    image: "images/butt_clip_flareon.jpg"
+  },
+
+  {
+    name: "雷伊布",
+    stock: 10,
+    image: "images/butt_clip_jolteon.jpg"
+  },
+
+  {
+    name: "水伊布",
+    stock: 10,
+    image: "images/butt_clip_vaporeon.jpg"
+  },
+
+  {
+    name: "月伊布",
+    stock: 10,
+    image: "images/butt_clip_umbreon.jpg"
+  },
+
+  {
+    name: "色違月伊布",
+    stock: 10,
+    image: "images/butt_clip_shiny_umbreon.jpg"
+  },
+
+  {
+    name: "太陽伊布",
+    stock: 10,
+    image: "images/butt_clip_espeon.jpg"
+  },
+
+  {
+    name: "冰伊布",
+    stock: 10,
+    image: "images/butt_clip_glaceon.jpg"
+  },
+
+  {
+    name: "葉伊布",
+    stock: 10,
+    image: "images/butt_clip_leafeon.jpg"
+  },
+
+  {
+    name: "仙子伊布",
+    stock: 10,
+    image: "images/butt_clip_sylveon.jpg"
+  },
+
+  {
+    name: "色違仙子伊布",
+    stock: 10,
+    image: "images/butt_clip_shiny_sylveon.jpg"
+  }
+],
 
     specialBundles: [
       {

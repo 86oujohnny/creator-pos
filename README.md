@@ -1,7 +1,8 @@
 ````md
 ## Version
-Current version: `0.1.2`
+Current version: `0.1.3`
 refactor storage for local and future cloud data
+add product image display in variant buttons
 # Creator POS
 
 簡易同人場 POS 系統。  

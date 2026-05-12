@@ -62,6 +62,46 @@ button {
 
   cursor: pointer;
 }
+.product-image {
+  width: 80px;
+
+  height: 80px;
+
+  object-fit: cover;
+
+  border-radius: 8px;
+
+  margin-bottom: 6px;
+}
+.variant-button {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 120px;
+
+  background-color: white;
+
+  color: black;
+
+  border: 1px solid #ddd;
+}
+
+.variant-image {
+  width: 80px;
+
+  height: 80px;
+
+  object-fit: cover;
+
+  border-radius: 8px;
+
+  margin-bottom: 6px;
+}
 
 /* 按下效果 */
 button:active {
