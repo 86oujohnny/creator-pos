@@ -1,5 +1,25 @@
-// ===== 資料儲存與載入 =====
 function saveData() {
+  if (USE_FIREBASE) {
+    // 之後放 saveCloudData();
+    return;
+  }
+
+  saveLocalData();
+}
+
+function loadData() {
+  if (USE_FIREBASE) {
+    // 之後放 loadCloudData();
+    return;
+  }
+
+  loadLocalData();
+}
+
+
+
+// ===== 資料儲存與載入 =====
+function saveLocalData() {
   localStorage.setItem("creatorPOS_money", money);
 
   localStorage.setItem(
@@ -18,10 +38,10 @@ window.addEventListener("beforeunload", () => {
     return;
   }
 
-  saveData();
+  saveLocalData();
 });
 // ===== 頁面載入時讀取資料 =====
-function loadData() {
+function loadLocalData() {
   money = Number(localStorage.getItem("creatorPOS_money")) || 0;
 
   salesLog =
