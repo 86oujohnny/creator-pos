@@ -50,7 +50,7 @@ const products = [
 
   {
     name: "生氣狐",
-    stock: 10,
+    stock: 100,
     image: "images/acrylic_stand_angry_fox.jpg"
   },
 
