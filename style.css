@@ -16,24 +16,59 @@ body {
 /* 商品區 */
 #productArea {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
 }
 
-@media (min-width: 768px) {
-  #productArea {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-/* 商品卡片 */
 #productArea > div {
   background: white;
 
-  padding: 12px;
+  padding: 6px;
 
-  border-radius: 10px;
+  border-radius: 8px;
 
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+
+  overflow: hidden;
+}
+
+button {
+  min-width: 0;
+  min-height: 44px;
+  padding: 6px;
+  margin: 2px;
+  font-size: 12px;
+  border: none;
+  border-radius: 8px;
+  background-color: #4caf50;
+  color: white;
+  cursor: pointer;
+}
+
+.variant-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+
+  background-color: white;
+  color: black;
+  border: 1px solid #ddd;
+}
+
+.variant-image {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+
+.product-image {
+  width: 16px;
+  height: 16px;
 }
 /* 結帳按鈕 */
 .checkout-button {
@@ -43,78 +78,12 @@ body {
 
   width: 100%;
 }
-/* 按鈕 */
-button {
-  min-width: 90px;
-
-  min-height: 44px;
-
-  padding: 8px 12px;
-
-  margin: 4px;
-
-  font-size: 16px;
-
-  border: none;
-
-  border-radius: 8px;
-
-  background-color: #4caf50;
-
-  color: white;
-
-  cursor: pointer;
-}
-.product-image {
-  width: 20px;
-
-  height: 20px;
-
-  object-fit: cover;
-
-  border-radius: 8px;
-
-  margin-bottom: 6px;
-}
-.variant-button {
-  display: flex;
-
-  flex-direction: column;
-
-  align-items: center;
-
-  justify-content: center;
-
-  width: 120px;
-
-  background-color: white;
-
-  color: black;
-
-  border: 1px solid #ddd;
-}
-
-.variant-image {
-  width: 80px;
-
-  height: 80px;
-
-  object-fit: cover;
-
-  border-radius: 8px;
-
-  margin-bottom: 6px;
-}
 
 /* 按下效果 */
 button:active {
   transform: scale(0.98);
 }
 
-/* 商品按鈕區自動換行 */
-#productArea div button {
-  display: inline-block;
-}
 
 /* 本次銷售 */
 #currentSaleList li {
