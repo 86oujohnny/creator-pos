@@ -16,11 +16,14 @@ body {
 /* 商品區 */
 #productArea {
   display: grid;
-
-  grid-template-columns:
-    repeat(auto-fill, minmax(140px, 1fr));
-
+  grid-template-columns: 1fr;
   gap: 12px;
+}
+
+@media (min-width: 768px) {
+  #productArea {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 /* 商品卡片 */
 #productArea > div {
@@ -63,9 +66,9 @@ button {
   cursor: pointer;
 }
 .product-image {
-  width: 80px;
+  width: 20px;
 
-  height: 80px;
+  height: 20px;
 
   object-fit: cover;
 
