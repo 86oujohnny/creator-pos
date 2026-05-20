@@ -12,3 +12,5 @@ let salesLog = [];
 let luckyBagMode = false;
 let luckyBagContents = [];
 let isResettingData = false;
+let gashaponMode = false;
+let gashaponResults = [];

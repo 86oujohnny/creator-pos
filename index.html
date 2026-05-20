@@ -24,11 +24,22 @@
   <ul id="currentSaleList"></ul>
 
   <p>本次小計：<span id="currentSaleTotal">0</span> 元</p>
+  <button id="clearCurrentSaleButton">清空本次銷售</button>
   <button id="checkoutButton" class="checkout-button">結帳本次銷售</button>
   <button id="startLuckyBagButton">開始編輯福袋</button>
   <button id="finishLuckyBagButton">完成福袋</button>
   <button id="cancelLuckyBagButton">取消福袋</button>
-  <button id="clearCurrentSaleButton">清空本次銷售</button>
+
+  <p>扭蛋模式：<span id="gashaponModeText">關閉</span></p>
+
+  <h2>目前扭蛋池</h2>
+  <div id="gashaponPoolArea"></div>
+
+  <h2>扭蛋結果</h2>
+  <ul id="gashaponResultList"></ul>
+  <button id="startGashaponButton">開始編輯扭蛋</button>
+  <button id="finishGashaponButton">完成扭蛋</button>
+  <button id="cancelGashaponButton">取消扭蛋</button>
 
   <h2>商品</h2>
   <div id="productArea"></div>
@@ -45,6 +56,7 @@
 <script src="bundle.js?v=1"></script>
 <script src="render.js?v=1"></script>
 <script src="luckyBag.js?v=1"></script>
+<script src="gashapon.js?v=1"></script>
 <script src="sales.js?v=1"></script>
 <script src="storage.js?v=1"></script>
 <script src="script.js?v=1"></script>

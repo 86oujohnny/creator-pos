@@ -1,5 +1,10 @@
 // ==== 福袋模式 =====
 function startLuckyBag() {
+  if (gashaponMode) {
+    alert("目前正在記錄扭蛋，請先完成或取消扭蛋");
+    return;
+  }
+
   luckyBagMode = true;
   luckyBagContents = [];
 
@@ -22,16 +27,16 @@ function finishLuckyBag() {
   }
 
   currentSale.push({
-    productId: luckyBagProduct.id,
-    name: luckyBagProduct.name,
-    variant: "福袋",
-    singlePrice: luckyBagProduct.price,
-    bundleCount: luckyBagProduct.bundleCount,
-    bundlePrice: luckyBagProduct.bundlePrice,
-    isFixedPrice: true,
-    contents: [...luckyBagContents]
-  });
-
+  productId: luckyBagProduct.id,
+  name: luckyBagProduct.name,
+  variant: "福袋",
+  singlePrice: luckyBagProduct.price,
+  bundleCount: luckyBagProduct.bundleCount,
+  bundlePrice: luckyBagProduct.bundlePrice,
+  isFixedPrice: true,
+  trackStock: false,
+  contents: [...luckyBagContents]
+});
   luckyBagContents = [];
   luckyBagMode = false;
   renderAll();

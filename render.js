@@ -16,6 +16,9 @@ function renderAll() {
   renderLuckyBagContents();
   updateLuckyBagUI();
   renderStock();
+  renderGashaponPool();
+  renderGashaponResults();
+  updateGashaponUI();
 }
 // ===== 什麼時候重新建立整個商品區 =====
 function renderProductButtons() {
@@ -124,21 +127,7 @@ function createSpecialBundleButtons(card, product) {
     specialButton.textContent = `${bundle.name} ${bundle.price}元`;
 
     specialButton.addEventListener("click", () => {
-      currentSale.push({
-        productId: `${product.id}_${bundle.name}`,
-        name: `${product.name} - ${bundle.name}`,
-        variant: "套組",
-        singlePrice: bundle.price,
-        isFixedPrice: true,
-        contents: bundle.variants.map(variantName => ({
-          productId: product.id,
-          name: product.name,
-          variant: variantName,
-          singlePrice: product.price
-        }))
-      });
-
-      renderAll();
+      addToCurrentSale(product, bundle);
     });
 
     card.appendChild(specialButton);

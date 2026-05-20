@@ -3,10 +3,44 @@ function calculateSaleTotal(items) {
   const fixedItems = items.filter(item => item.isFixedPrice);
   const normalItems = items.filter(item => !item.isFixedPrice);
 
+  const subtotal =
+    calculateGroupedItemsTotal(fixedItems) +
+    calculateNormalItemsTotal(normalItems);
+
+  const discountBase = calculateCouponEligibleTotal(items);
+  const couponDiscount = calculateCouponDiscount(items, discountBase);
+
+  return Math.max(0, subtotal - couponDiscount);
+}
+
+function calculateCouponEligibleTotal(items) {
+  const eligibleItems = items.filter(item =>
+    item.productId !== "gashapon" &&
+    item.productId !== "lucky_bag"
+  );
+
+  const fixedItems = eligibleItems.filter(item => item.isFixedPrice);
+  const normalItems = eligibleItems.filter(item => !item.isFixedPrice);
+
   return (
     calculateGroupedItemsTotal(fixedItems) +
     calculateNormalItemsTotal(normalItems)
   );
+}
+
+function calculateCouponDiscount(items, maxDiscountBase) {
+  let discount = 0;
+
+  items.forEach(item => {
+    if (
+      item.gashaponResult &&
+      item.gashaponResult.rewardType === "coupon"
+    ) {
+      discount += item.gashaponResult.maxValue || 0;
+    }
+  });
+
+  return Math.min(discount, maxDiscountBase);
 }
 // ===== 計算固定價格商品總和（例如福袋） =====
 function calculateGroupedItemsTotal(items) {
@@ -84,17 +118,32 @@ function removeBundleItemsFromGroup(group, bundle) {
 }
 // ===== 計算數量優惠 =====
 function calculateQuantityBundleTotal(group) {
-  const firstItem = group[0];
+  let total = 0;
+
+  group.forEach(item => {
+    if (item.isSpecialBundle) {
+      total += item.singlePrice;
+    }
+  });
+
+  const normalGroup = group.filter(item => !item.isSpecialBundle);
+
+  if (normalGroup.length === 0) {
+    return total;
+  }
+
+  const firstItem = normalGroup[0];
 
   if (firstItem.bundleCount && firstItem.bundlePrice) {
-    const bundleGroups = Math.floor(group.length / firstItem.bundleCount);
-    const remainingItems = group.length % firstItem.bundleCount;
+    const bundleGroups = Math.floor(normalGroup.length / firstItem.bundleCount);
+    const remainingItems = normalGroup.length % firstItem.bundleCount;
 
     return (
+      total +
       bundleGroups * firstItem.bundlePrice +
       remainingItems * firstItem.singlePrice
     );
   }
 
-  return group.length * firstItem.singlePrice;
+  return total + normalGroup.length * firstItem.singlePrice;
 }

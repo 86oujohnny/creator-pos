@@ -1,9 +1,10 @@
 ````md
 ## Version
-Current version: `0.1.5`
+Current version: `0.1.6`
 refactor storage for local and future cloud data
 add product image display and change layout
 change stock amount to 100
+add new type of purchase type "gashapon"
 # Creator POS
 
 簡易同人場 POS 系統。  

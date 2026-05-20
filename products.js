@@ -7,9 +7,52 @@ const products = [
     bundlePrice: 1500,
     isFixedPrice: true,
     hiddenFromProductButtons: true,
+    trackStock: false,
     variants: []
   },
+  
+  {
+    id: "gashapon",
+    name: "好運摸魚徽章扭蛋",
 
+    price: 650,
+    bundleCount: 2,
+    bundlePrice: 1200,
+
+    isFixedPrice: true,
+    hiddenFromProductButtons: true,
+    trackStock: false,
+
+    prizes: [
+      {
+        id: "gold",
+        name: "金色狐魚徽章",
+        rewardType: "ych",
+        reward: "設定概念圖",
+      },
+      {
+        id: "blue",
+        name: "藍色狐魚徽章",
+        rewardType: "ych",
+        reward: "色塊頭貼YCH",
+      },
+      {
+        id: "green",
+        name: "綠色狐魚徽章",
+        rewardType: "ych",
+        reward: "飲料YCH",
+      },
+      {
+        id: "red",
+        name: "紅色狐魚徽章",
+        rewardType: "coupon",
+        reward: "800抵用券",
+        maxValue: 800,
+        allowTopUp: true,
+        excluded: ["狐番賞"]
+      }
+    ]
+  },
 
   {
     id: "acrylic_stand",

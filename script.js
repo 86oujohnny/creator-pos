@@ -10,6 +10,9 @@ resetAllDataButton?.addEventListener("click", resetAllData);
 startLuckyBagButton?.addEventListener("click", startLuckyBag);
 finishLuckyBagButton?.addEventListener("click", finishLuckyBag);
 cancelLuckyBagButton?.addEventListener("click", cancelLuckyBag);
+startGashaponButton?.addEventListener("click", startGashapon);
+finishGashaponButton?.addEventListener("click", finishGashapon);
+cancelGashaponButton?.addEventListener("click", cancelGashapon);
 /*
 products.js  商品資料，要最早
 state.js     money/currentSale/salesLog/luckyBagMode
