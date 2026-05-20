@@ -83,6 +83,18 @@ function getStockItemsFromSale(saleItems) {
       return;
     }
 
+    if (item.bundleItems) {
+      item.bundleItems.forEach(variantName => {
+        addStockItem({
+          productId: item.productId,
+          name: item.name,
+          variant: variantName,
+          singlePrice: item.singlePrice
+        });
+      });
+      return;
+    }
+
     const product = products.find(p => p.id === item.productId);
 
     if (!product || product.trackStock === false) {
