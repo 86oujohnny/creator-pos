@@ -107,11 +107,17 @@ function getSnapshotStock(snapshot, productId, variantName) {
     return "";
   }
 
-  if (variantName === "無款式") {
-    return snapshot[productId];
+  const productStock = snapshot[productId];
+
+  if (
+    variantName === "無款式" ||
+    typeof productStock !== "object" ||
+    productStock === null
+  ) {
+    return productStock ?? "";
   }
 
-  return snapshot[productId][variantName] ?? "";
+  return productStock[variantName] ?? "";
 }
 
 // ===== 匯出 CSV 工具函式 =====
@@ -124,37 +130,19 @@ function downloadCsvFile(blob, fileName) {
 
   const link = document.createElement("a");
   link.href = url;
+  link.target = "_blank";
   link.download = fileName;
 
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
 
-  URL.revokeObjectURL(url);
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 1000);
 }
 
 function exportCsvFile(blob) {
-  const file = new File(
-    [blob],
-    "sales_log.csv",
-    { type: "text/csv;charset=utf-8;" }
-  );
-
-  if (
-    navigator.canShare &&
-    navigator.canShare({ files: [file] })
-  ) {
-    navigator.share({
-      files: [file],
-      title: "sales_log"
-    }).catch(error => {
-      console.log("分享失敗，改用下載", error);
-      downloadCsvFile(blob, "sales_log.csv");
-    });
-
-    return;
-  }
-
   downloadCsvFile(blob, "sales_log.csv");
 }
 // ===== 匯出銷售紀錄 CSV =====
@@ -183,7 +171,11 @@ function exportSalesLogToCSV() {
       rows.push([
         saleIndex + 1,
         sale.time,
-        item.contents ? "福袋" : "一般商品",
+        item.contents
+         ? "福袋"
+         : item.bundleItems
+           ? "扭蛋"
+           : "一般商品",
         item.name,
         item.variant,
         item.singlePrice,
