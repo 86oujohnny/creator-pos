@@ -156,7 +156,7 @@ button.innerHTML = `
       `
       : ""
   }
-
+			
   <div>
     ${variant.name}
   </div>
