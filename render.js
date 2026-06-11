@@ -82,7 +82,9 @@ function renderSalesLog() {
     
     // 添加狀態指示
     if (sale.status === "inactive") {
-      displayText += ` [已替換]`;
+      displayText += sale.refunded
+        ? " [已退貨]"
+        : " [已替換]";
       li.style.opacity = "0.5";
       li.style.textDecoration = "line-through";
     }
