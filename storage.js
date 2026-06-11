@@ -32,6 +32,17 @@ function saveLocalData() {
     JSON.stringify(createStockSnapshot())
   );
 }
+
+function parseLocalJson(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
+
+    return value ? JSON.parse(value) : fallback;
+  } catch (error) {
+    console.warn(`無法讀取 ${key}，改用預設值`, error);
+    return fallback;
+  }
+}
 // ===== 在頁面卸載前儲存資料 (例如關閉或重新整理頁面) =====
 window.addEventListener("beforeunload", () => {
   if (isResettingData) {
@@ -44,11 +55,9 @@ window.addEventListener("beforeunload", () => {
 function loadLocalData() {
   money = Number(localStorage.getItem("creatorPOS_money")) || 0;
 
-  salesLog =
-    JSON.parse(localStorage.getItem("creatorPOS_salesLog")) || [];
+  salesLog = parseLocalJson("creatorPOS_salesLog", []);
 
-  const savedStock =
-    JSON.parse(localStorage.getItem("creatorPOS_stock"));
+  const savedStock = parseLocalJson("creatorPOS_stock", null);
 
   if (savedStock) {
     applyStockSnapshot(savedStock);
@@ -145,6 +154,39 @@ function downloadCsvFile(blob, fileName) {
 function exportCsvFile(blob) {
   downloadCsvFile(blob, "sales_log.csv");
 }
+
+const SALE_TYPE_LABELS = {
+  gashapon: "扭蛋",
+  lucky_bag: "福袋",
+  special_bundle: "特殊套組",
+  normal: "一般商品"
+};
+
+function getSaleItemType(item) {
+  if (item.type) {
+    return SALE_TYPE_LABELS[item.type] || item.type;
+  }
+
+  if (item.gashaponResult) {
+    return "扭蛋";
+  }
+
+  if (item.isSpecialBundle || item.bundleItems) {
+    return "特殊套組";
+  }
+
+  if (item.contents) {
+    return "福袋";
+  }
+
+  return "一般商品";
+}
+
+function getContentsRowType(item) {
+  return getSaleItemType(item) === "特殊套組"
+    ? "特殊套組內容"
+    : "福袋內容";
+}
 // ===== 匯出銷售紀錄 CSV =====
 function exportSalesLogToCSV() {
   if (salesLog.length === 0) {
@@ -161,7 +203,7 @@ function exportSalesLogToCSV() {
       "款式",
       "單價",
       "該筆總額",
-      "福袋內容",
+      "內容來源",
       "結帳後庫存"
     ]
   ];
@@ -171,11 +213,7 @@ function exportSalesLogToCSV() {
       rows.push([
         saleIndex + 1,
         sale.time,
-        item.contents
-         ? "福袋"
-         : item.bundleItems
-           ? "扭蛋"
-           : "一般商品",
+        getSaleItemType(item),
         item.name,
         item.variant,
         item.singlePrice,
@@ -193,7 +231,7 @@ function exportSalesLogToCSV() {
           rows.push([
             saleIndex + 1,
             sale.time,
-            "福袋內容",
+            getContentsRowType(item),
             content.name,
             content.variant,
             content.singlePrice,

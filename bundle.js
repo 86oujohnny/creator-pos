@@ -7,16 +7,16 @@ function calculateSaleTotal(items) {
     calculateGroupedItemsTotal(fixedItems) +
     calculateNormalItemsTotal(normalItems);
 
-  const discountBase = calculateCouponEligibleTotal(items);
-  const couponDiscount = calculateCouponDiscount(items, discountBase);
+  const couponDiscount = calculateCouponDiscount(items);
 
   return Math.max(0, subtotal - couponDiscount);
 }
 
-function calculateCouponEligibleTotal(items) {
+function calculateCouponEligibleTotal(items, excluded = []) {
   const eligibleItems = items.filter(item =>
     item.productId !== "gashapon" &&
-    item.productId !== "lucky_bag"
+    item.productId !== "lucky_bag" &&
+    !isExcludedFromCoupon(item, excluded)
   );
 
   const fixedItems = eligibleItems.filter(item => item.isFixedPrice);
@@ -28,19 +28,47 @@ function calculateCouponEligibleTotal(items) {
   );
 }
 
-function calculateCouponDiscount(items, maxDiscountBase) {
+function isExcludedFromCoupon(item, excluded) {
+  return excluded.some(excludedValue =>
+    item.productId === excludedValue ||
+    item.name === excludedValue ||
+    item.variant === excludedValue ||
+    item.type === excludedValue
+  );
+}
+
+function calculateCouponDiscount(items) {
   let discount = 0;
+  const remainingDiscountBaseByKey = {};
 
   items.forEach(item => {
     if (
       item.gashaponResult &&
       item.gashaponResult.rewardType === "coupon"
     ) {
-      discount += item.gashaponResult.maxValue || 0;
+      const excluded = item.gashaponResult.excluded || [];
+      const excludedKey = createExcludedKey(excluded);
+
+      if (remainingDiscountBaseByKey[excludedKey] === undefined) {
+        remainingDiscountBaseByKey[excludedKey] =
+          calculateCouponEligibleTotal(items, excluded);
+      }
+
+      const couponDiscount = Math.min(
+        item.gashaponResult.maxValue || 0,
+        remainingDiscountBaseByKey[excludedKey]
+      );
+
+      discount += couponDiscount;
+      remainingDiscountBaseByKey[excludedKey] -= couponDiscount;
     }
   });
 
-  return Math.min(discount, maxDiscountBase);
+  return Math.min(discount, calculateCouponEligibleTotal(items));
+}
+
+function createExcludedKey(excluded) {
+  return [...excluded].sort().join("||");
 }
 // ===== 計算固定價格商品總和（例如福袋） =====
 function calculateGroupedItemsTotal(items) {

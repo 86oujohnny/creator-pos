@@ -23,6 +23,7 @@ function addToCurrentSale(product, variant) {
   luckyBagContents.push({
     productId: product.id,
     name: product.name,
+    type: isSpecialBundle ? "special_bundle" : "normal",
     variant: isSpecialBundle ? variant.name : (variant || "預設"),
     singlePrice: isSpecialBundle ? variant.price : product.price,
     bundleCount: product.bundleCount,
@@ -51,6 +52,7 @@ function addToCurrentSale(product, variant) {
 currentSale.push({
   productId: product.id,
   name: product.name,
+  type: isSpecialBundle ? "special_bundle" : "normal",
   variant: isSpecialBundle ? variant.name : variant,
   singlePrice: isSpecialBundle ? variant.price : product.price,
   bundleCount: isSpecialBundle ? null : product.bundleCount,

@@ -27,16 +27,17 @@ function finishLuckyBag() {
   }
 
   currentSale.push({
-  productId: luckyBagProduct.id,
-  name: luckyBagProduct.name,
-  variant: "福袋",
-  singlePrice: luckyBagProduct.price,
-  bundleCount: luckyBagProduct.bundleCount,
-  bundlePrice: luckyBagProduct.bundlePrice,
-  isFixedPrice: true,
-  trackStock: false,
-  contents: [...luckyBagContents]
-});
+    productId: luckyBagProduct.id,
+    name: luckyBagProduct.name,
+    type: "lucky_bag",
+    variant: "福袋",
+    singlePrice: luckyBagProduct.price,
+    bundleCount: luckyBagProduct.bundleCount,
+    bundlePrice: luckyBagProduct.bundlePrice,
+    isFixedPrice: true,
+    trackStock: false,
+    contents: [...luckyBagContents]
+  });
   luckyBagContents = [];
   luckyBagMode = false;
   renderAll();

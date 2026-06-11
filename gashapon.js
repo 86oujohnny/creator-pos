@@ -49,6 +49,7 @@ function finishGashapon() {
     currentSale.push({
       productId: gashaponProduct.id,
       name: gashaponProduct.name,
+      type: "gashapon",
       variant: result.name,
       singlePrice: gashaponProduct.price,
       bundleCount: gashaponProduct.bundleCount,
