@@ -297,6 +297,11 @@ function checkoutCurrentSale() {
 }
 // ===== 撤銷上次銷售 =====
 function undoLastSale() {
+  if (editingSaleId) {
+    alert("目前正在編輯訂單，請先完成結帳或清空本次銷售");
+    return;
+  }
+
   let lastActiveSaleIndex = -1;
 
   for (let i = salesLog.length - 1; i >= 0; i--) {
