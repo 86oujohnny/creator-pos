@@ -1,5 +1,9 @@
 // ==== 福袋模式 =====
 function startLuckyBag() {
+  if (luckyBagMode) {
+    return;
+  }
+
   if (gashaponMode) {
     alert("目前正在記錄扭蛋，請先完成或取消扭蛋");
     return;
@@ -9,8 +13,6 @@ function startLuckyBag() {
   luckyBagContents = [];
 
   renderAll();
-
-  alert("已開始編輯福袋，接下來點商品會加入福袋內容，不會計價");
 }
 // ===== 完成福袋編輯 =====
 function finishLuckyBag() {
@@ -90,8 +92,12 @@ function updateLuckyBagUI() {
       luckyBagMode ? "開啟" : "關閉";
   }
    if (startLuckyBagButton) {
-    startLuckyBagButton.style.display =
-      luckyBagMode ? "none" : "inline-block";
+    startLuckyBagButton.textContent = luckyBagMode ? "福袋模式：開啟" : "開始編輯福袋";
+    if (luckyBagMode) {
+      startLuckyBagButton.classList.add("mode-active");
+    } else {
+      startLuckyBagButton.classList.remove("mode-active");
+    }
   }
 
   if (cancelLuckyBagButton) {

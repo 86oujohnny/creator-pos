@@ -84,6 +84,13 @@ button:active {
   transform: scale(0.98);
 }
 
+/* Active mode state */
+button.mode-active {
+  background-color: #45a049;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  border: 2px solid #2e7d32;
+}
+
 
 /* 本次銷售 */
 #currentSaleList li {

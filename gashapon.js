@@ -1,6 +1,10 @@
 // ==== 扭蛋模式 =====
 function startGashapon() {
 
+  if (gashaponMode) {
+    return;
+  }
+
   if (luckyBagMode) {
     alert("編輯福袋時不能編輯扭蛋");
     return;
@@ -10,8 +14,6 @@ function startGashapon() {
   gashaponResults = [];
 
   renderAll();
-
-  alert("已開始記錄扭蛋結果，請點選客人抽到的徽章");
 }
 
 // ===== 加入扭蛋結果 =====
@@ -140,8 +142,12 @@ function updateGashaponUI() {
   }
 
   if (startGashaponButton) {
-    startGashaponButton.style.display =
-      gashaponMode ? "none" : "inline-block";
+    startGashaponButton.textContent = gashaponMode ? "扭蛋模式：開啟" : "開始編輯扭蛋";
+    if (gashaponMode) {
+      startGashaponButton.classList.add("mode-active");
+    } else {
+      startGashaponButton.classList.remove("mode-active");
+    }
   }
 
   if (cancelGashaponButton) {
