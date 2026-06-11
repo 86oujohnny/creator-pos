@@ -202,6 +202,44 @@ function checkoutCurrentSale() {
   }
 
   if (currentSale.length === 0) {
+    if (editingSaleId) {
+      const confirmed = confirm("確定要將這筆訂單全額退貨嗎？");
+
+      if (!confirmed) {
+        return;
+      }
+
+      const oldSaleIndex = salesLog.findIndex(
+        sale => sale.id === editingSaleId
+      );
+
+      if (oldSaleIndex === -1) {
+        alert("無法找到要編輯的訂單");
+        return;
+      }
+
+      const oldSale = salesLog[oldSaleIndex];
+      const oldStockItems = getStockItemsFromSale(oldSale.items);
+
+      oldSale.status = "inactive";
+      oldSale.editedAt = new Date().toLocaleString();
+      oldSale.refunded = true;
+
+      oldStockItems.forEach(item => {
+        increaseStock(item.productId, item.variant, item.quantity);
+      });
+
+      money -= oldSale.total;
+      if (money < 0) money = 0;
+      moneyText.textContent = money;
+
+      editingSaleId = null;
+
+      saveData();
+      renderAll();
+      return;
+    }
+
     alert("本次銷售是空的");
     return;
   }
