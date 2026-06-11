@@ -55,6 +55,116 @@ const products = [
   },
 
   {
+    id: "puji",
+    name: "噗嘰",
+    price: 160,
+    variants: [
+     {
+      name: "飢餓狐",
+      stock: 100,
+      image: "images/puji_hungry_fox.jpg"
+     },
+
+     {
+      name: "生氣狐",
+      stock: 100,
+      image: "images/puji_angry_fox.jpg"
+     },
+
+     {
+      name: "生氣伊布",
+      stock: 100,
+      image: "images/puji_angry_eevee.jpg"
+     }
+    ]
+  },
+
+  {
+    id: "fox_side_bag",
+    name: "狐狸側背包",
+    price: 450,
+    variants: [
+      { name: "綠色", stock: 100 },
+      { name: "白色", stock: 100 },
+      { name: "黑色", stock: 100 }
+    ]
+  },
+
+  {
+    id: "fox_travel_bag",
+    name: "狐狸大旅行包",
+    price: 650,
+    variants: [
+      { name: "綠色", stock: 100 },
+      { name: "米色", stock: 100 },
+      { name: "黑色", stock: 100 }
+    ]
+  },
+
+  {
+    id: "fox_bottle_bag",
+    name: "狐狸水壺包",
+    price: 380,
+    variants: [
+      { name: "白色", stock: 100 },
+      { name: "黑色", stock: 100 },
+      { name: "黃色", stock: 100 }
+    ]
+  },
+
+  {
+    id: "fox_plush_keychain",
+    name: "肉球抱抱狐玩偶吊飾",
+    price: 320,
+    stock: 100,
+    variants: []
+  },
+
+  {
+    id: "fox_towel",
+    name: "狐狸擦手巾",
+    price: 350,
+    stock: 100,
+    variants: []
+  },
+
+  {
+    id: "eevee_card_holder",
+    name: "伊布卡套",
+    price: 250,
+    stock: 100,
+    variants: []
+  },
+
+  {
+    id: "postcard_sticker_set",
+    name: "明信片貼紙套組",
+    price: 50,
+    stock: 100,
+    variants: []
+  },
+
+  {
+    id: "fox_rug",
+    name: "狐狸地毯",
+    price: 450,
+    stock: 100,
+    variants: []
+  },
+
+  {
+    id: "slacking_hat",
+    name: "摸魚帽",
+    price: 280,
+    variants: [
+      { name: "黑色", stock: 100 },
+      { name: "咖色", stock: 100 },
+      { name: "米色", stock: 100 },
+      { name: "綠色", stock: 100 }
+    ]
+  },
+
+  {
     id: "acrylic_stand",
     name: "壓克力飯友",
     price: 120,
@@ -241,115 +351,6 @@ const products = [
           "色違仙子伊布"
         ]
       }
-    ]
-  },
-  {
-    id: "puji",
-    name: "噗嘰",
-    price: 160,
-    variants: [
-     {
-      name: "飢餓狐",
-      stock: 100,
-      image: "images/puji_hungry_fox.jpg"
-     },
-
-     {
-      name: "生氣狐",
-      stock: 100,
-      image: "images/puji_angry_fox.jpg"
-     },
-
-     {
-      name: "生氣伊布",
-      stock: 100,
-      image: "images/puji_angry_eevee.jpg"
-     }
-    ]
-  },
-
-  {
-    id: "fox_side_bag",
-    name: "狐狸側背包",
-    price: 450,
-    variants: [
-      { name: "綠色", stock: 100 },
-      { name: "白色", stock: 100 },
-      { name: "黑色", stock: 100 }
-    ]
-  },
-
-  {
-    id: "fox_travel_bag",
-    name: "狐狸大旅行包",
-    price: 650,
-    variants: [
-      { name: "綠色", stock: 100 },
-      { name: "米色", stock: 100 },
-      { name: "黑色", stock: 100 }
-    ]
-  },
-
-  {
-    id: "fox_bottle_bag",
-    name: "狐狸水壺包",
-    price: 380,
-    variants: [
-      { name: "白色", stock: 100 },
-      { name: "黑色", stock: 100 },
-      { name: "黃色", stock: 100 }
-    ]
-  },
-
-  {
-    id: "fox_plush_keychain",
-    name: "肉球抱抱狐玩偶吊飾",
-    price: 320,
-    stock: 100,
-    variants: []
-  },
-
-  {
-    id: "fox_towel",
-    name: "狐狸擦手巾",
-    price: 350,
-    stock: 100,
-    variants: []
-  },
-
-  {
-    id: "eevee_card_holder",
-    name: "伊布卡套",
-    price: 250,
-    stock: 100,
-    variants: []
-  },
-
-  {
-    id: "postcard_sticker_set",
-    name: "明信片貼紙套組",
-    price: 50,
-    stock: 100,
-    variants: []
-  },
-
-  {
-    id: "fox_rug",
-    name: "狐狸地毯",
-    price: 450,
-    stock: 100,
-    variants: []
-  },
-
-  {
-    id: "slacking_hat",
-    name: "摸魚帽",
-    price: 280,
-    variants: [
-      { name: "黑色", stock: 100 },
-      { name: "咖色", stock: 100 },
-      { name: "米色", stock: 100 },
-      { name: "綠色", stock: 100 }
     ]
   }
 ];
