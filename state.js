@@ -14,3 +14,4 @@ let luckyBagContents = [];
 let isResettingData = false;
 let gashaponMode = false;
 let gashaponResults = [];
+let editingSaleId = null;

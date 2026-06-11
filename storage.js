@@ -63,6 +63,11 @@ function loadLocalData() {
     applyStockSnapshot(savedStock);
   }
 
+  // 為舊的銷售紀錄補充 id 和 status（向後相容）
+  if (salesLog && salesLog.length > 0) {
+    ensureSalesLogHasIds();
+  }
+
   moneyText.textContent = money;
 }
 // ===== 套用儲存的庫存快照 =====
@@ -129,6 +134,13 @@ function getSnapshotStock(snapshot, productId, variantName) {
   return productStock[variantName] ?? "";
 }
 
+// ===== 取得僅包含 active 訂單的銷售紀錄 =====
+function getActiveSalesLog() {
+  return salesLog.filter(sale => 
+    sale.status === undefined || sale.status === "active"
+  );
+}
+
 // ===== 匯出 CSV 工具函式 =====
 function escapeCsvCell(cell) {
   return `"${String(cell).replaceAll('"', '""')}"`;
@@ -189,7 +201,9 @@ function getContentsRowType(item) {
 }
 // ===== 匯出銷售紀錄 CSV =====
 function exportSalesLogToCSV() {
-  if (salesLog.length === 0) {
+  const activeSalesLog = getActiveSalesLog();
+  
+  if (activeSalesLog.length === 0) {
     alert("目前沒有銷售紀錄可以匯出");
     return;
   }
@@ -208,7 +222,7 @@ function exportSalesLogToCSV() {
     ]
   ];
 
-  salesLog.forEach((sale, saleIndex) => {
+  activeSalesLog.forEach((sale, saleIndex) => {
     sale.items.forEach(item => {
       rows.push([
         saleIndex + 1,

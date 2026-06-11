@@ -77,7 +77,26 @@ function renderSalesLog() {
       .map(item => `${item.name}-${item.variant}`)
       .join("、");
 
-    li.textContent = `第 ${index + 1} 筆：${itemText}，共 ${sale.total} 元`;
+    // 建立顯示文本
+    let displayText = `第 ${index + 1} 筆：${itemText}，共 ${sale.total} 元`;
+    
+    // 添加狀態指示
+    if (sale.status === "inactive") {
+      displayText += ` [已替換]`;
+      li.style.opacity = "0.5";
+      li.style.textDecoration = "line-through";
+    }
+    
+    li.textContent = displayText;
+    
+    // 僅為 active 訂單添加編輯按鈕
+    if (sale.status !== "inactive") {
+      const editButton = document.createElement("button");
+      editButton.textContent = "編輯";
+      editButton.style.marginLeft = "10px";
+      editButton.addEventListener("click", () => editSale(index, sale));
+      li.appendChild(editButton);
+    }
 
     salesLogList.appendChild(li);
   });

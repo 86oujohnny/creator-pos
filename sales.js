@@ -121,8 +121,76 @@ function getStockItemsFromSale(saleItems) {
   });
 
   return Object.values(stockMap);
+}// ===== 驗證庫存：恢復舊訂單後是否足以扣除新訂單 =====
+function canDecreaseNewStockAfterRestoringOld(newStockItems, oldStockItems) {
+  // 建立恢復數量的對應表
+  const restoreMap = {};
+  oldStockItems.forEach(item => {
+    const key = `${item.productId}||${item.variant}`;
+    restoreMap[key] = (restoreMap[key] || 0) + item.quantity;
+  });
+  
+  // 檢查每個新訂單項目在恢復後是否足夠
+  return newStockItems.every(item => {
+    const product = products.find(p => p.id === item.productId);
+    if (product.trackStock === false) return true;
+    
+    const key = `${item.productId}||${item.variant}`;
+    const restoreQty = restoreMap[key] || 0;
+    
+    if (Array.isArray(product.variants) && product.variants.length > 0) {
+      const variant = product.variants.find(v => v.name === item.variant);
+      if (!variant) return false;
+      
+      const availableStock = variant.stock + restoreQty;
+      return availableStock >= item.quantity;
+    } else {
+      const availableStock = (product.stock ?? 0) + restoreQty;
+      return availableStock >= item.quantity;
+    }
+  });
 }
-// ==== 結帳 =====
+// ===== 為舊的銷售紀錄補充 id 和 status（向後相容） =====
+function ensureSalesLogHasIds() {
+  let idCounter = 0;
+  salesLog.forEach(sale => {
+    if (!sale.id) {
+      sale.id = `sale_${Date.now()}_${idCounter++}`;
+    }
+    if (!sale.status) {
+      sale.status = "active";
+    }
+  });
+}
+// ===== 編輯已結帳的訂單（輕量級 - 只複製項目和設置追蹤） =====
+function editSale(saleIndex, sale) {
+  // 檢查：已有其他訂單在編輯
+  if (editingSaleId) {
+    alert("目前已有訂單正在編輯，請先完成結帳");
+    return;
+  }
+
+  // 檢查：currentSale 不能有項目
+  if (currentSale.length > 0) {
+    alert("請先完成或刪除目前的銷售項目");
+    return;
+  }
+
+  // 檢查：舊訂單不能已被替換
+  if (sale.status === "inactive") {
+    alert("無法編輯已替換的訂單");
+    return;
+  }
+
+  // 1. 複製項目到 currentSale 供編輯（不修改任何持久化狀態）
+  currentSale = JSON.parse(JSON.stringify(sale.items));
+  
+  // 2. 設置編輯追蹤（不持久化）
+  editingSaleId = sale.id;
+
+  // 3. 重新渲染以顯示項目
+  renderAll();
+}// ==== 結帳 =====
 function checkoutCurrentSale() {
   if (luckyBagMode) {
     alert("目前還在編輯福袋，請先按完成福袋");
@@ -138,18 +206,61 @@ function checkoutCurrentSale() {
     return;
   }
 
-  const stockItems = getStockItemsFromSale(currentSale);
-
-  const hasEnoughStock = stockItems.every(item =>
-    canDecreaseStock(item.productId, item.variant, item.quantity)
-  );
+  // ===== 驗證階段（無狀態改變） =====
+  
+  const newStockItems = getStockItemsFromSale(currentSale);
+  
+  let oldSale = null;
+  let oldSaleIndex = -1;
+  let oldStockItems = [];
+  
+  // 如果在編輯，驗證舊訂單存在
+  if (editingSaleId) {
+    oldSaleIndex = salesLog.findIndex(sale => sale.id === editingSaleId);
+    if (oldSaleIndex === -1) {
+      alert("無法找到要編輯的訂單");
+      return;
+    }
+    oldSale = salesLog[oldSaleIndex];
+    oldStockItems = getStockItemsFromSale(oldSale.items);
+  }
+  
+  // 驗證新訂單庫存（考慮編輯情況）
+  let hasEnoughStock;
+  if (editingSaleId) {
+    // 新訂單庫存必須在恢復舊訂單後仍然充足
+    hasEnoughStock = canDecreaseNewStockAfterRestoringOld(newStockItems, oldStockItems);
+  } else {
+    // 正常新訂單，直接檢查
+    hasEnoughStock = newStockItems.every(item =>
+      canDecreaseStock(item.productId, item.variant, item.quantity)
+    );
+  }
 
   if (!hasEnoughStock) {
     alert("庫存不足，無法結帳");
     return;
   }
 
-  stockItems.forEach(item => {
+  // ===== 驗證通過，開始改變狀態 =====
+  
+  if (editingSaleId) {
+    // 1. 標記舊訂單為已替換
+    oldSale.status = "inactive";
+    oldSale.editedAt = new Date().toLocaleString();
+    
+    // 2. 恢復舊訂單的庫存
+    oldStockItems.forEach(item => {
+      increaseStock(item.productId, item.variant, item.quantity);
+    });
+    
+    // 3. 從 money 中減去舊訂單的總額
+    money -= oldSale.total;
+    if (money < 0) money = 0;
+  }
+
+  // 4. 扣除新訂單的庫存
+  newStockItems.forEach(item => {
     decreaseStock(item.productId, item.variant, item.quantity);
   });
 
@@ -158,12 +269,26 @@ function checkoutCurrentSale() {
   money += total;
   moneyText.textContent = money;
 
-  salesLog.push({
-  items: [...currentSale],
-  total: total,
-  time: new Date().toLocaleString(),
-  stockSnapshot: createStockSnapshot()
-});
+  // 5. 生成新訂單 ID 和狀態
+  const newSaleId = `sale_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  
+  const newSale = {
+    id: newSaleId,
+    items: [...currentSale],
+    total: total,
+    time: new Date().toLocaleString(),
+    stockSnapshot: createStockSnapshot(),
+    status: "active"
+  };
+
+  // 6. 如果是編輯舊訂單，建立連結並清空編輯追蹤
+  if (editingSaleId) {
+    newSale.replaces = editingSaleId;
+    salesLog[oldSaleIndex].replacedBy = newSaleId;
+    editingSaleId = null;
+  }
+
+  salesLog.push(newSale);
 
   saveData();
 
@@ -266,6 +391,8 @@ function clearCurrentSale() {
 
   gashaponMode = false;
   gashaponResults = [];
+
+  editingSaleId = null;
 
   renderAll();
   console.log("已清空本次銷售");
