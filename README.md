@@ -1,6 +1,14 @@
 ````md
 ## Version
-Current version: `0.1.6`
+Current version: `1.0`
+
+Creator POS v1.0
+- Paid order editing
+- Full refund support
+- Undo protection
+- Audit history
+- CSV export
+
 refactor storage for local and future cloud data
 add product image display and change layout
 change stock amount to 100
