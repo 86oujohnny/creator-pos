@@ -297,13 +297,21 @@ function checkoutCurrentSale() {
 }
 // ===== 撤銷上次銷售 =====
 function undoLastSale() {
-  const lastSale = salesLog.pop();
+  let lastActiveSaleIndex = -1;
 
-  if (!lastSale) {
+  for (let i = salesLog.length - 1; i >= 0; i--) {
+    if (salesLog[i].status !== "inactive") {
+      lastActiveSaleIndex = i;
+      break;
+    }
+  }
+
+  if (lastActiveSaleIndex === -1) {
     alert("沒有可以撤銷的紀錄");
     return;
   }
 
+  const lastSale = salesLog[lastActiveSaleIndex];
   const stockItems = getStockItemsFromSale(lastSale.items);
 
   stockItems.forEach(item => {
@@ -317,6 +325,8 @@ function undoLastSale() {
   }
 
   moneyText.textContent = money;
+
+  salesLog.splice(lastActiveSaleIndex, 1);
 
   saveData();
   renderAll();
