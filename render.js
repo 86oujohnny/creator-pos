@@ -13,6 +13,7 @@ function renderAll() {
   renderProductButtons();
   renderCurrentSale();
   renderSalesLog();
+  renderProductStatistics();
   renderLuckyBagContents();
   updateLuckyBagUI();
   renderStock();
@@ -103,6 +104,167 @@ function renderSalesLog() {
 
     salesLogList.appendChild(li);
   });
+}
+
+function getProductStatisticsRows() {
+  const statsByProductId = {};
+  const activeSalesLog = getActiveSalesLog();
+
+  activeSalesLog.forEach(sale => {
+    const saleItems = Array.isArray(sale.items) ? sale.items : [];
+    const saleStatsByProductId = {};
+    const grossByProductId = {};
+    let grossTotal = 0;
+
+    saleItems.forEach(item => {
+      if (!item || typeof item !== "object") {
+        return;
+      }
+
+      const productId = item.productId || null;
+      const trimmedName = typeof item.name === "string"
+        ? item.name.trim()
+        : "";
+
+      if (!productId && !trimmedName) {
+        return;
+      }
+
+      const name = trimmedName || "未知商品";
+      const productKey = productId || `legacy:${name}`;
+      const itemGross = Number(item.singlePrice) || 0;
+
+      if (!saleStatsByProductId[productKey]) {
+        saleStatsByProductId[productKey] = {
+          productId: productKey,
+          name,
+          quantity: 0,
+          revenue: 0
+        };
+      }
+
+      saleStatsByProductId[productKey].quantity += 1;
+      grossByProductId[productKey] =
+        (grossByProductId[productKey] || 0) + itemGross;
+      grossTotal += itemGross;
+    });
+
+    if (grossTotal <= 0) {
+      return;
+    }
+
+    const savedSaleTotal = Number(sale.total);
+    const saleTotal = Number.isFinite(savedSaleTotal) && savedSaleTotal > 0
+      ? savedSaleTotal
+      : calculateSaleTotal(saleItems);
+
+    if (!Number.isFinite(saleTotal) || saleTotal <= 0) {
+      return;
+    }
+
+    // TODO: Coupon discounts currently use proportional revenue allocation.
+    Object.keys(grossByProductId).forEach(productKey => {
+      const ratio = grossByProductId[productKey] / grossTotal;
+      saleStatsByProductId[productKey].revenue += saleTotal * ratio;
+    });
+
+    Object.keys(saleStatsByProductId).forEach(productKey => {
+      if (!statsByProductId[productKey]) {
+        statsByProductId[productKey] = saleStatsByProductId[productKey];
+        return;
+      }
+
+      statsByProductId[productKey].quantity +=
+        saleStatsByProductId[productKey].quantity;
+      statsByProductId[productKey].revenue +=
+        saleStatsByProductId[productKey].revenue;
+    });
+  });
+
+  return Object.values(statsByProductId);
+}
+
+function createStatisticsList(rows, sortFn, formatFn) {
+  const list = document.createElement("ol");
+
+  rows
+    .slice()
+    .sort(sortFn)
+    .forEach(row => {
+      const li = document.createElement("li");
+
+      li.textContent = formatFn(row);
+      list.appendChild(li);
+    });
+
+  return list;
+}
+
+function formatStatisticsRevenue(revenue) {
+  return Math.round(revenue);
+}
+
+function renderProductStatistics() {
+  if (!productStatisticsArea) return;
+
+  productStatisticsArea.innerHTML = "";
+
+  const rows = getProductStatisticsRows();
+
+  if (rows.length === 0) {
+    productStatisticsArea.textContent = "尚無商品銷售統計";
+    return;
+  }
+
+  const hotSummary = document.createElement("p");
+  const topByQuantity = rows
+    .slice()
+    .sort((a, b) =>
+      b.quantity - a.quantity ||
+      b.revenue - a.revenue ||
+      a.name.localeCompare(b.name)
+    )[0];
+  const topByRevenue = rows
+    .slice()
+    .sort((a, b) =>
+      b.revenue - a.revenue ||
+      b.quantity - a.quantity ||
+      a.name.localeCompare(b.name)
+    )[0];
+
+  hotSummary.textContent =
+    `熱賣：${topByQuantity.name} ${topByQuantity.quantity} 個` +
+    `｜營收最高：${topByRevenue.name} ${formatStatisticsRevenue(topByRevenue.revenue)} 元`;
+
+  const quantityHeading = document.createElement("h3");
+  quantityHeading.textContent = "銷售數量排行";
+
+  const quantityList = createStatisticsList(
+    rows,
+    (a, b) =>
+      b.quantity - a.quantity ||
+      b.revenue - a.revenue ||
+      a.name.localeCompare(b.name),
+    row => `${row.name}：${row.quantity} 個，${formatStatisticsRevenue(row.revenue)} 元`
+  );
+
+  const revenueHeading = document.createElement("h3");
+  revenueHeading.textContent = "銷售營收排行";
+
+  const revenueList = createStatisticsList(
+    rows,
+    (a, b) =>
+      b.revenue - a.revenue ||
+      b.quantity - a.quantity ||
+      a.name.localeCompare(b.name),
+    row => `${row.name}：${formatStatisticsRevenue(row.revenue)} 元，${row.quantity} 個`
+  );
+
+  productStatisticsArea.appendChild(hotSummary);
+  productStatisticsArea.appendChild(quantityHeading);
+  productStatisticsArea.appendChild(quantityList);
+  productStatisticsArea.appendChild(revenueHeading);
+  productStatisticsArea.appendChild(revenueList);
 }
 
 

@@ -3,6 +3,7 @@ const moneyText = document.getElementById("money");
 
 const productArea = document.getElementById("productArea");
 const stockArea = document.getElementById("stockArea");
+const productStatisticsArea = document.getElementById("productStatisticsArea");
 
 const currentSaleList = document.getElementById("currentSaleList");
 const currentSaleTotal = document.getElementById("currentSaleTotal");
