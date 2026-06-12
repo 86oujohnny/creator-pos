@@ -19,6 +19,7 @@ function renderAll() {
   renderGashaponPool();
   renderGashaponResults();
   updateGashaponUI();
+  renderProductManager();
 }
 // ===== 什麼時候重新建立整個商品區 =====
 function renderProductButtons() {
