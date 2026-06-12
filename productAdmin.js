@@ -100,7 +100,7 @@ function updateProductPrice(product, priceInput) {
   const priceText = priceInput.value.trim();
   const price = Number(priceText);
 
-  if (!priceText || !Number.isFinite(price) || price < 0) {
+if (!priceText || !Number.isFinite(price) || price <= 0)
     alert("請輸入有效價格");
     return;
   }
