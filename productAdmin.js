@@ -13,30 +13,59 @@ function createCustomProduct(name, price) {
 }
 
 function loadProductAdminData() {
-  const savedPrices = parseLocalJson(PRODUCT_PRICES_STORAGE_KEY, {});
+  const parsedPrices = parseLocalJson(PRODUCT_PRICES_STORAGE_KEY, {});
+  const savedPrices =
+    parsedPrices &&
+    typeof parsedPrices === "object" &&
+    !Array.isArray(parsedPrices)
+      ? parsedPrices
+      : {};
 
   products.forEach(product => {
     if (savedPrices[product.id] !== undefined) {
-      product.price = Number(savedPrices[product.id]);
+      const price = Number(savedPrices[product.id]);
+
+      if (Number.isFinite(price) && price > 0) {
+        product.price = price;
+      }
     }
   });
 
-  const customProducts = parseLocalJson(CUSTOM_PRODUCTS_STORAGE_KEY, []);
+  const parsedCustomProducts = parseLocalJson(CUSTOM_PRODUCTS_STORAGE_KEY, []);
+  const customProducts = Array.isArray(parsedCustomProducts)
+    ? parsedCustomProducts
+    : [];
 
   customProducts.forEach(savedProduct => {
-    if (products.some(product => product.id === savedProduct.id)) {
+    const id = typeof savedProduct.id === "string"
+      ? savedProduct.id.trim()
+      : "";
+    const name = typeof savedProduct.name === "string"
+      ? savedProduct.name.trim()
+      : "";
+
+    if (!id || !name) {
       return;
     }
 
-    const savedPrice = savedPrices[savedProduct.id];
-    const price = savedPrice !== undefined
-      ? Number(savedPrice)
-      : Number(savedProduct.price);
+    if (products.some(product => product.id === id)) {
+      return;
+    }
+
+    const overridePrice = Number(savedPrices[id]);
+    const savedProductPrice = Number(savedProduct.price);
+    const price = Number.isFinite(overridePrice) && overridePrice > 0
+      ? overridePrice
+      : savedProductPrice;
+
+    if (!Number.isFinite(price) || price <= 0) {
+      return;
+    }
 
     products.push({
-      id: savedProduct.id,
-      name: savedProduct.name,
-      price: Number.isFinite(price) ? price : 0,
+      id,
+      name,
+      price,
       variants: [],
       trackStock: false,
       isCustomProduct: true
@@ -82,7 +111,7 @@ function addCustomProductFromForm(event) {
     return;
   }
 
-  if (!priceText || !Number.isFinite(price) || price < 0) {
+  if (!priceText || !Number.isFinite(price) || price <= 0) {
     alert("請輸入有效價格");
     return;
   }
@@ -100,7 +129,7 @@ function updateProductPrice(product, priceInput) {
   const priceText = priceInput.value.trim();
   const price = Number(priceText);
 
-if (!priceText || !Number.isFinite(price) || price <= 0)
+  if (!priceText || !Number.isFinite(price) || price <= 0) {
     alert("請輸入有效價格");
     return;
   }
