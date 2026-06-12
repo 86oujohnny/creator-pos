@@ -91,6 +91,32 @@ button.mode-active {
   border: 2px solid #2e7d32;
 }
 
+/* 商品管理 */
+#customProductForm,
+#productManagerList li {
+  display: grid;
+  grid-template-columns: 1fr 90px auto;
+  gap: 6px;
+  align-items: center;
+}
+
+#customProductForm input,
+#productManagerList input {
+  min-height: 44px;
+  padding: 6px;
+  font-size: 16px;
+}
+
+#productManagerList {
+  padding-left: 0;
+}
+
+#productManagerList li {
+  grid-template-columns: minmax(100px, 1fr) 90px auto auto;
+  margin-bottom: 6px;
+  list-style: none;
+}
+
 
 /* 本次銷售 */
 #currentSaleList li {

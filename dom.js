@@ -15,6 +15,12 @@ const clearCurrentSaleButton = document.getElementById("clearCurrentSaleButton")
 const exportCsvButton = document.getElementById("exportCsvButton");
 const resetAllDataButton = document.getElementById("resetAllDataButton");
 
+// ===== 商品管理元素 =====
+const customProductForm = document.getElementById("customProductForm");
+const customProductNameInput = document.getElementById("customProductNameInput");
+const customProductPriceInput = document.getElementById("customProductPriceInput");
+const productManagerList = document.getElementById("productManagerList");
+
 // ===== 福袋元素 =====
 const startLuckyBagButton = document.getElementById("startLuckyBagButton");
 const finishLuckyBagButton = document.getElementById("finishLuckyBagButton");

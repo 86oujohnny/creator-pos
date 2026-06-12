@@ -31,6 +31,8 @@ function saveLocalData() {
     "creatorPOS_stock",
     JSON.stringify(createStockSnapshot())
   );
+
+  saveProductAdminData();
 }
 
 function parseLocalJson(key, fallback) {
@@ -53,6 +55,8 @@ window.addEventListener("beforeunload", () => {
 });
 // ===== 頁面載入時讀取資料 =====
 function loadLocalData() {
+  loadProductAdminData();
+
   money = Number(localStorage.getItem("creatorPOS_money")) || 0;
 
   salesLog = parseLocalJson("creatorPOS_salesLog", []);

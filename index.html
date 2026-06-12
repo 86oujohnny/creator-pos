@@ -41,6 +41,14 @@
   <button id="finishGashaponButton">完成扭蛋</button>
   <button id="cancelGashaponButton">取消扭蛋</button>
 
+  <h2>商品管理</h2>
+  <form id="customProductForm">
+    <input id="customProductNameInput" type="text" placeholder="商品名稱">
+    <input id="customProductPriceInput" type="number" min="0" step="1" placeholder="價格">
+    <button type="submit">新增商品</button>
+  </form>
+  <ul id="productManagerList"></ul>
+
   <h2>商品</h2>
   <div id="productArea"></div>
 
@@ -58,6 +66,7 @@
 <script src="luckyBag.js?v=1"></script>
 <script src="gashapon.js?v=1"></script>
 <script src="sales.js?v=1"></script>
+<script src="productAdmin.js?v=1"></script>
 <script src="storage.js?v=1"></script>
 <script src="script.js?v=1"></script>
 </body>
