@@ -235,6 +235,12 @@ const products = [
     name: "冰伊布",
     stock: 100,
     image: "images/acrylic_stand_glaceon.jpg"
+  },
+
+  {
+    name: "炫彩吊飾",
+    stock: 100,
+    image: "images/acrylic_stand_iridescent_charm.jpg"
   }
 ]
   },
@@ -329,6 +335,48 @@ const products = [
     name: "色違仙子伊布",
     stock: 100,
     image: "images/butt_clip_shiny_sylveon.jpg"
+  },
+
+  {
+    name: "毛毛",
+    stock: 100,
+    image: "images/butt_clip_maomao.jpg"
+  },
+
+  {
+    name: "岩狗狗",
+    stock: 100,
+    image: "images/butt_clip_rockruff.jpg"
+  },
+
+  {
+    name: "阿勃普通",
+    stock: 100,
+    image: "images/butt_clip_absol_normal.jpg"
+  },
+
+  {
+    name: "阿勃X",
+    stock: 100,
+    image: "images/butt_clip_absol_x.jpg"
+  },
+
+  {
+    name: "阿勃Y",
+    stock: 100,
+    image: "images/butt_clip_absol_y.jpg"
+  },
+
+  {
+    name: "路卡利歐",
+    stock: 100,
+    image: "images/butt_clip_lucario.jpg"
+  },
+
+  {
+    name: "捷拉奧拉",
+    stock: 100,
+    image: "images/butt_clip_zeraora.jpg"
   }
 ],
 
