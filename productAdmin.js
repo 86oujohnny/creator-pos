@@ -177,9 +177,11 @@ function renderProductManager() {
     priceInput.min = "0";
     priceInput.step = "1";
     priceInput.value = product.price;
+    priceInput.style.display = "none";
 
     saveButton.type = "button";
-    saveButton.textContent = "儲存價格";
+    saveButton.textContent = "價格修改已停用";
+    saveButton.style.display = "none";
     saveButton.addEventListener("click", () => {
       updateProductPrice(product, priceInput);
     });
