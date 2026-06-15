@@ -1,5 +1,6 @@
 const CUSTOM_PRODUCTS_STORAGE_KEY = "creatorPOS_customProducts";
 const PRODUCT_PRICES_STORAGE_KEY = "creatorPOS_productPrices";
+const ENABLE_PRICE_EDIT = false;
 
 function createCustomProduct(name, price) {
   return {
@@ -177,11 +178,14 @@ function renderProductManager() {
     priceInput.min = "0";
     priceInput.step = "1";
     priceInput.value = product.price;
-    priceInput.style.display = "none";
+    priceInput.style.display = ENABLE_PRICE_EDIT ? "" : "none";
 
     saveButton.type = "button";
-    saveButton.textContent = "價格修改已停用";
-    saveButton.style.display = "none";
+    saveButton.textContent = ENABLE_PRICE_EDIT
+      ? "儲存價格"
+      : "價格修改已停用";
+    saveButton.style.display = ENABLE_PRICE_EDIT ? "" : "none";
+    saveButton.disabled = !ENABLE_PRICE_EDIT;
     saveButton.addEventListener("click", () => {
       updateProductPrice(product, priceInput);
     });
