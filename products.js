@@ -108,8 +108,41 @@ const products = [
     variants: [
       { name: "白色", stock: 100 },
       { name: "黑色", stock: 100 },
-      { name: "黃色", stock: 100 }
+      { name: "黃色", stock: 100 },
+      { name: "綠色", stock: 100 }
     ]
+  },
+
+  {
+    id: "transparent_waist_bag",
+    name: "透明腰包",
+    price: 380,
+    variants: [
+      {
+        name: "淡藍",
+        stock: 100,
+        image: "images/transparent_waist_bag_light_blue.jpg"
+      },
+      {
+        name: "米白",
+        stock: 100,
+        image: "images/transparent_waist_bag_ivory.jpg"
+      },
+      {
+        name: "黑",
+        stock: 100,
+        image: "images/transparent_waist_bag_black.jpg"
+      }
+    ]
+  },
+
+  {
+    id: "eye_mask",
+    name: "眼罩",
+    price: 300,
+    stock: 100,
+    image: "images/eye_mask.jpg",
+    variants: []
   },
 
   {
@@ -141,6 +174,15 @@ const products = [
     name: "明信片貼紙套組",
     price: 50,
     stock: 100,
+    variants: []
+  },
+
+  {
+    id: "postcard",
+    name: "明信片",
+    price: 20,
+    stock: 100,
+    image: "images/postcard.jpg",
     variants: []
   },
 
@@ -241,6 +283,12 @@ const products = [
     name: "炫彩吊飾",
     stock: 100,
     image: "images/acrylic_stand_iridescent_charm.jpg"
+  },
+
+  {
+    name: "好運守",
+    stock: 100,
+    image: "images/acrylic_stand_lucky_charm.jpg"
   }
 ]
   },
