@@ -67,8 +67,20 @@ button {
 }
 
 .product-image {
-  width: 16px;
-  height: 16px;
+  display: block;
+  width: 96px;
+  height: 96px;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+@media (max-width: 600px) {
+  .product-image {
+    width: 120px;
+    height: 120px;
+  }
 }
 /* 結帳按鈕 */
 .checkout-button {
