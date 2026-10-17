@@ -91,7 +91,7 @@ const server = http.createServer((request, response) => {
       assert.equal((await state(page)).money, 900); assert.equal((await state(page)).salesLog.length, 1);
       await page.reload(); await ready(page); assert.equal((await state(page)).stock.omamori["伊布御守"], 99);
       await page.locator("#productArea img").evaluateAll(images => Promise.all(images.map(i => i.decode())));
-      assert.equal(await page.locator("#productArea img").count(), 52);
+      assert.equal(await page.locator("#productArea img").count(), 55);
       assert.equal(await page.locator("#productManagerList input:visible").count(), 0);
       await c.close();
     }
