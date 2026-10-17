@@ -1,5 +1,6 @@
 // ==== 扭蛋模式 =====
 function startGashapon() {
+  if (!canWriteData()) return;
 
   if (gashaponMode) {
     return;
@@ -18,6 +19,7 @@ function startGashapon() {
 
 // ===== 加入扭蛋結果 =====
 function addGashaponResult(prize) {
+  if (!canWriteData()) return;
   if (!gashaponMode) return;
 
   gashaponResults.push({
@@ -35,6 +37,7 @@ function addGashaponResult(prize) {
 
 // ===== 完成扭蛋編輯 =====
 function finishGashapon() {
+  if (!canWriteData()) return;
   const gashaponProduct = products.find(product => product.id === "gashapon");
 
   if (!gashaponProduct) {
@@ -70,6 +73,7 @@ function finishGashapon() {
 
 // ===== 取消扭蛋 =====
 function cancelGashapon() {
+  if (!canWriteData()) return;
   const confirmed = confirm("確定取消這次扭蛋紀錄嗎？");
 
   if (!confirmed) return;
@@ -125,6 +129,7 @@ function renderGashaponResults() {
     deleteButton.textContent = "刪除";
 
     deleteButton.addEventListener("click", () => {
+      if (!canWriteData()) return;
       gashaponResults.splice(index, 1);
       renderAll();
     });

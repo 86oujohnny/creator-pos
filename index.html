@@ -8,6 +8,10 @@
 </head>
 
 <body>
+  <p id="storageStatus" role="alert">正在取得收銀寫入權。</p>
+  <button id="retryStorageButton" type="button">重試載入／取得寫入權</button>
+  <button id="releaseStorageButton" type="button" hidden>釋放寫入權</button>
+  <fieldset id="posControls" disabled style="border: 0; padding: 0; margin: 0; min-width: 0;">
   <h2>
     總營收為：<span id="money">0</span> 元 
     <button id="undoButton">撤銷上一筆</button>
@@ -58,17 +62,19 @@
     <button type="submit">新增商品</button>
   </form>
   <ul id="productManagerList"></ul>
-<script src="config.js?v=1"></script>
-<script src="products.js?v=1"></script>
-<script src="state.js?v=1"></script>
-<script src="dom.js?v=1"></script>
-<script src="bundle.js?v=1"></script>
-<script src="render.js?v=1"></script>
-<script src="luckyBag.js?v=1"></script>
-<script src="gashapon.js?v=1"></script>
-<script src="sales.js?v=1"></script>
-<script src="productAdmin.js?v=1"></script>
-<script src="storage.js?v=1"></script>
-<script src="script.js?v=1"></script>
+  </fieldset>
+<script src="config.js?v=storage-safety-1"></script>
+<script src="products.js?v=storage-safety-1"></script>
+<script src="state.js?v=storage-safety-1"></script>
+<script src="dom.js?v=storage-safety-1"></script>
+<script src="bundle.js?v=storage-safety-1"></script>
+<script src="render.js?v=storage-safety-1"></script>
+<script src="luckyBag.js?v=storage-safety-1"></script>
+<script src="gashapon.js?v=storage-safety-1"></script>
+<script src="sales.js?v=storage-safety-1"></script>
+<script src="productAdmin.js?v=storage-safety-1"></script>
+<script src="storage.js?v=storage-safety-1"></script>
+<script src="session.js?v=storage-safety-1"></script>
+<script src="script.js?v=storage-safety-1"></script>
 </body>
 </html>

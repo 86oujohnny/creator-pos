@@ -33,12 +33,14 @@ A simple POS system designed for artist alley / convention booths.
 
 ## 使用方式 Usage
 
-直接開啟：  
-Open directly:
+本機使用（需要支援 Web Locks 的瀏覽器）：
+Local use (requires a browser with Web Locks support):
 
-```txt
-index.html
+```sh
+python3 -m http.server 8000
 ````
+
+開啟 `http://localhost:8000/`。正式環境請使用 HTTPS；不支援安全分頁鎖定時會禁止寫入。
 
 Or use GitHub Pages:
 
@@ -53,6 +55,14 @@ https://86oujohnny.github.io/creator-pos/
 * HTML
 * CSS
 * Vanilla JavaScript
+
+## 資料安全與測試
+
+修復版使用單一交易狀態與 Web Locks 單一可寫分頁。部署前必須關閉所有舊版收銀分頁；新版本開始記錄交易後不可直接降版讀取舊儲存 key。
+
+執行 `npm ci`、`npx playwright install chromium` 後，可使用 `npm test` 與 `npm run test:browser`。瀏覽器測試只使用隔離的本機測試環境。
+
+完整修復報告、相容性與部署注意事項：[Storage Safety Review](docs/reviews/2026-10-17-storage-safety.md)。
 
 ---
 
