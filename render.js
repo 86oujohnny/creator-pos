@@ -10,6 +10,7 @@ Create product card
 Create variant buttons
 */
 function renderAll() {
+  if (stagingTransaction) return;
   renderProductButtons();
   renderCurrentSale();
   renderSalesLog();
@@ -21,6 +22,7 @@ function renderAll() {
   renderGashaponResults();
   updateGashaponUI();
   renderProductManager();
+  updateStorageUI();
 }
 // ===== 什麼時候重新建立整個商品區 =====
 function renderProductButtons() {
@@ -56,6 +58,7 @@ function renderCurrentSale() {
     deleteButton.textContent = "刪除";
 
     deleteButton.addEventListener("click", () => {
+      if (!canWriteData()) return;
       currentSale.splice(index, 1);
       renderAll();
     });

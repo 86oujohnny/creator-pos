@@ -1,6 +1,7 @@
 // ===== 初始化 =====
-loadData();
-renderAll();
+startStorageSession();
+document.getElementById("retryStorageButton").addEventListener("click", startStorageSession);
+document.getElementById("releaseStorageButton").addEventListener("click", releaseStorageSession);
 
 undoButton?.addEventListener("click", undoLastSale);
 checkoutButton?.addEventListener("click", checkoutCurrentSale);

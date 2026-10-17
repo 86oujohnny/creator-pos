@@ -1,78 +1,214 @@
-function saveData() {
-  if (USE_FIREBASE) {
-    // 之後放 saveCloudData();
-    return;
-  }
+const POS_STATE_KEY = "creatorPOS_state";
+const POS_SCHEMA_VERSION = 1;
+const defaultProducts = JSON.parse(JSON.stringify(products));
+let hasWriteLock = false;
+let storageInitialized = false;
+let storageError = "";
+let committedRaw = null;
+let loadedPrices = {};
+let loadedStock = {};
+let priceMigrationVersion = 0;
+let stateRevision = 0;
+let stagingTransaction = false;
+let transactionNeedsSave = false;
 
-  saveLocalData();
+function canWriteData() {
+  return hasWriteLock && storageInitialized;
 }
 
-function loadData() {
-  if (USE_FIREBASE) {
-    // 之後放 loadCloudData();
-    return;
-  }
-
-  loadLocalData();
-}
-
-
-
-// ===== 資料儲存與載入 =====
-function saveLocalData() {
-  localStorage.setItem("creatorPOS_money", money);
-
-  localStorage.setItem(
-    "creatorPOS_salesLog",
-    JSON.stringify(salesLog)
-  );
-
-  localStorage.setItem(
-    "creatorPOS_stock",
-    JSON.stringify(createStockSnapshot())
-  );
-
-  saveProductAdminData();
+function requireWritable() {
+  if (!canWriteData()) throw new Error("資料尚未載入或此分頁沒有寫入權，請重試取得寫入權。");
 }
 
 function parseLocalJson(key, fallback) {
-  try {
-    const value = localStorage.getItem(key);
+  const value = localStorage.getItem(key);
+  return value === null ? fallback : JSON.parse(value);
+}
 
-    return value ? JSON.parse(value) : fallback;
+function readMigrationVersion(value) {
+  const version = value === null || value === undefined || value === "" ? 0 : Number(value);
+  if (!Number.isSafeInteger(version) || version < 0) return 0;
+  if (version > PRODUCT_PRICES_MIGRATION_VERSION) throw new Error("價格資料版本較新，請更新網站後重試。");
+  return version;
+}
+
+function isRecord(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function validateStoredState(data) {
+  if (!isRecord(data) || data.schemaVersion !== POS_SCHEMA_VERSION ||
+      !Number.isSafeInteger(data.revision) || data.revision < 0 ||
+      !Number.isFinite(data.money) || data.money < 0 ||
+      !Array.isArray(data.salesLog) || !Array.isArray(data.customProducts) ||
+      !isRecord(data.prices) || !isRecord(data.stock)) {
+    throw new Error("儲存資料格式或版本無法讀取，原資料已保留。");
+  }
+  const validPrice = value => Number.isFinite(Number(value)) && Number(value) > 0;
+  const validStock = value => value === null || (Number.isSafeInteger(value) && value >= 0);
+  const validItem = item => isRecord(item) && typeof item.productId === "string" &&
+    Number.isFinite(item.singlePrice) && item.singlePrice >= 0 &&
+    (!item.contents || (Array.isArray(item.contents) && item.contents.every(validItem))) &&
+    (!item.bundleItems || (Array.isArray(item.bundleItems) && item.bundleItems.every(name => typeof name === "string")));
+  if (Object.values(data.prices).some(value => !validPrice(value)) ||
+      Object.values(data.stock).some(value => isRecord(value)
+        ? Object.values(value).some(stock => stock === null || !validStock(stock)) : !validStock(value)) ||
+      data.customProducts.some(p => !isRecord(p) || typeof p.id !== "string" || !p.id.trim() ||
+        typeof p.name !== "string" || !p.name.trim() || !validPrice(p.price)) ||
+      data.salesLog.some(sale => !isRecord(sale) || !Array.isArray(sale.items) ||
+        !sale.items.every(validItem) || !Number.isFinite(sale.total) || sale.total < 0)) {
+    throw new Error("價格、訂單或庫存資料無效，原資料已保留。");
+  }
+  readMigrationVersion(data.priceMigrationVersion);
+}
+
+function readStoredState() {
+  const raw = localStorage.getItem(POS_STATE_KEY);
+  if (raw !== null) {
+    const data = JSON.parse(raw);
+    validateStoredState(data);
+    return { raw, data };
+  }
+  const moneyValue = localStorage.getItem("creatorPOS_money");
+  if (moneyValue !== null && moneyValue.trim() === "") throw new Error("營收資料無效，原資料已保留。");
+  const data = {
+    schemaVersion: POS_SCHEMA_VERSION, revision: 0,
+    priceMigrationVersion: readMigrationVersion(localStorage.getItem(PRODUCT_PRICES_MIGRATION_KEY)),
+    money: moneyValue === null ? 0 : Number(moneyValue),
+    salesLog: parseLocalJson("creatorPOS_salesLog", []),
+    stock: parseLocalJson("creatorPOS_stock", {}),
+    prices: parseLocalJson(PRODUCT_PRICES_STORAGE_KEY, {}),
+    customProducts: parseLocalJson(CUSTOM_PRODUCTS_STORAGE_KEY, [])
+  };
+  validateStoredState(data);
+  return { raw, data };
+}
+
+function restoreProducts(snapshot) {
+  const existing = new Map(products.map(product => [product.id, product]));
+  products.splice(0, products.length, ...snapshot.map(saved => {
+    const product = existing.get(saved.id) || {};
+    Object.keys(product).forEach(key => delete product[key]);
+    return Object.assign(product, saved);
+  }));
+}
+
+function captureRuntime() {
+  return JSON.parse(JSON.stringify({ products, money, salesLog, currentSale, editingSaleId,
+    luckyBagMode, luckyBagContents, gashaponMode, gashaponResults }));
+}
+
+function restoreRuntime(state) {
+  restoreProducts(state.products);
+  ({ money, salesLog, currentSale, editingSaleId, luckyBagMode,
+    luckyBagContents, gashaponMode, gashaponResults } = state);
+  if (moneyText) moneyText.textContent = money;
+}
+
+function createPersistentState() {
+  return {
+    schemaVersion: POS_SCHEMA_VERSION, revision: stateRevision + 1, priceMigrationVersion,
+    money, salesLog, stock: { ...loadedStock, ...createStockSnapshot() },
+    prices: { ...loadedPrices, ...Object.fromEntries(products.map(p => [p.id, p.price])) },
+    customProducts: products.filter(p => p.isCustomProduct).map(({ id, name, price }) => ({ id, name, price }))
+  };
+}
+
+function persistState(data) {
+  if (!hasWriteLock) throw new Error("此分頁沒有寫入權。");
+  if (localStorage.getItem(POS_STATE_KEY) !== committedRaw) {
+    storageInitialized = false;
+    throw new Error("資料已被其他版本更新，請重新載入後重試。");
+  }
+  validateStoredState(data);
+  const raw = JSON.stringify(data);
+  // 唯一提交點；setItem 失敗會保留完整的上一版，不寫入舊版分散 key。
+  localStorage.setItem(POS_STATE_KEY, raw);
+  committedRaw = raw;
+  stateRevision = data.revision;
+  loadedPrices = data.prices;
+  loadedStock = data.stock;
+}
+
+function saveData() {
+  if (stagingTransaction) { transactionNeedsSave = true; return; }
+  return saveLocalData();
+}
+
+function saveLocalData() {
+  requireWritable();
+  persistState(createPersistentState());
+}
+
+function loadData() {
+  return loadLocalData();
+}
+
+function loadLocalData() {
+  storageInitialized = false;
+  if (!hasWriteLock) throw new Error("請先取得分頁寫入權。");
+  const previous = captureRuntime();
+  try {
+    const { raw, data } = readStoredState();
+    committedRaw = raw;
+    stateRevision = data.revision;
+    priceMigrationVersion = readMigrationVersion(data.priceMigrationVersion);
+    loadedPrices = { ...data.prices };
+    loadedStock = data.stock;
+    restoreProducts(JSON.parse(JSON.stringify(defaultProducts)));
+    if (priceMigrationVersion < PRODUCT_PRICES_MIGRATION_VERSION) {
+      loadedPrices.omamori = 120;
+      loadedPrices.fox_card_holder = 280;
+      priceMigrationVersion = PRODUCT_PRICES_MIGRATION_VERSION;
+    }
+    loadProductAdminData(loadedPrices, data.customProducts);
+    money = data.money;
+    salesLog = data.salesLog;
+    applyStockSnapshot(data.stock);
+    ensureSalesLogHasIds();
+    currentSale = [];
+    editingSaleId = null;
+    luckyBagMode = gashaponMode = false;
+    luckyBagContents = [];
+    gashaponResults = [];
+    if (raw === null || readMigrationVersion(data.priceMigrationVersion) < PRODUCT_PRICES_MIGRATION_VERSION) {
+      persistState(createPersistentState());
+    }
+    storageInitialized = true;
+    storageError = "";
+    if (moneyText) moneyText.textContent = money;
   } catch (error) {
-    console.warn(`無法讀取 ${key}，改用預設值`, error);
-    return fallback;
+    restoreRuntime(previous);
+    storageError = `載入失敗：${error.message} 請重試，勿清除瀏覽器資料。`;
+    throw error;
   }
 }
-// ===== 在頁面卸載前儲存資料 (例如關閉或重新整理頁面) =====
-window.addEventListener("beforeunload", () => {
-  if (isResettingData) {
-    return;
+
+function commitLocalChange(change) {
+  if (!canWriteData()) return false;
+  const previous = captureRuntime();
+  let next;
+  try {
+    // 既有操作只產生草稿；提交前還原 live state，成功後才發布草稿。
+    stagingTransaction = true;
+    transactionNeedsSave = false;
+    change();
+    next = captureRuntime();
+    const data = transactionNeedsSave ? createPersistentState() : null;
+    restoreRuntime(previous);
+    stagingTransaction = false;
+    if (data) persistState(data);
+  } catch (error) {
+    stagingTransaction = false;
+    restoreRuntime(previous);
+    storageError = `儲存失敗：${error.message} 本次操作未完成，可安全重試。`;
+    renderAll();
+    return false;
   }
-
-  saveLocalData();
-});
-// ===== 頁面載入時讀取資料 =====
-function loadLocalData() {
-  loadProductAdminData();
-
-  money = Number(localStorage.getItem("creatorPOS_money")) || 0;
-
-  salesLog = parseLocalJson("creatorPOS_salesLog", []);
-
-  const savedStock = parseLocalJson("creatorPOS_stock", null);
-
-  if (savedStock) {
-    applyStockSnapshot(savedStock);
-  }
-
-  // 為舊的銷售紀錄補充 id 和 status（向後相容）
-  if (salesLog && salesLog.length > 0) {
-    ensureSalesLogHasIds();
-  }
-
-  moneyText.textContent = money;
+  restoreRuntime(next);
+  storageError = "";
+  renderAll();
+  return true;
 }
 // ===== 套用儲存的庫存快照 =====
 function applyStockSnapshot(snapshot) {
@@ -285,6 +421,7 @@ function exportSalesLogToCSV() {
 }
 // ===== 重置所有資料 =====
 function resetAllData() {
+  if (!canWriteData()) return;
   const confirmed = confirm(
     "確定要清空今日所有銷售資料並重置庫存嗎？"
   );
@@ -293,11 +430,20 @@ function resetAllData() {
     return;
   }
 
-  isResettingData = true;
-
-  localStorage.removeItem("creatorPOS_money");
-  localStorage.removeItem("creatorPOS_salesLog");
-  localStorage.removeItem("creatorPOS_stock");
-
-  location.reload();
+  commitLocalChange(() => {
+    money = 0;
+    salesLog = [];
+    const defaults = Object.fromEntries(defaultProducts.map(product => [product.id, product]));
+    products.forEach(product => {
+      const original = defaults[product.id];
+      if (!original) return;
+      if (product.variants?.length) {
+        product.variants.forEach(variant => {
+          variant.stock = original.variants.find(item => item.name === variant.name).stock;
+        });
+      } else if (original.stock !== undefined) product.stock = original.stock;
+    });
+    clearCurrentSale();
+    saveData();
+  });
 }

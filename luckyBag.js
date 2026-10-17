@@ -1,5 +1,6 @@
 // ==== 福袋模式 =====
 function startLuckyBag() {
+  if (!canWriteData()) return;
   if (luckyBagMode) {
     return;
   }
@@ -16,6 +17,7 @@ function startLuckyBag() {
 }
 // ===== 完成福袋編輯 =====
 function finishLuckyBag() {
+  if (!canWriteData()) return;
   const luckyBagProduct = products.find(product => product.id === "lucky_bag");
 
   if (!luckyBagProduct) {
@@ -48,6 +50,7 @@ function finishLuckyBag() {
 // 關閉福袋模式
 
 function cancelLuckyBag() {
+  if (!canWriteData()) return;
   const confirmed = confirm("確定取消這包福袋嗎？");
 
   if (!confirmed) {
@@ -77,6 +80,7 @@ function renderLuckyBagContents() {
     deleteButton.textContent = "刪除";
 
     deleteButton.addEventListener("click", () => {
+      if (!canWriteData()) return;
       luckyBagContents.splice(index, 1);
       renderLuckyBagContents();
     });

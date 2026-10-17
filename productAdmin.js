@@ -15,23 +15,7 @@ function createCustomProduct(name, price) {
   };
 }
 
-function loadProductAdminData() {
-  const parsedPrices = parseLocalJson(PRODUCT_PRICES_STORAGE_KEY, {});
-  const savedPrices =
-    parsedPrices &&
-    typeof parsedPrices === "object" &&
-    !Array.isArray(parsedPrices)
-      ? parsedPrices
-      : {};
-
-  if (Number(localStorage.getItem(PRODUCT_PRICES_MIGRATION_KEY)) < PRODUCT_PRICES_MIGRATION_VERSION) {
-    savedPrices.omamori = 120;
-    savedPrices.fox_card_holder = 280;
-    // 先儲存價格，成功後才標記遷移完成。
-    localStorage.setItem(PRODUCT_PRICES_STORAGE_KEY, JSON.stringify(savedPrices));
-    localStorage.setItem(PRODUCT_PRICES_MIGRATION_KEY, String(PRODUCT_PRICES_MIGRATION_VERSION));
-  }
-
+function loadProductAdminData(savedPrices, customProducts) {
   products.forEach(product => {
     if (savedPrices[product.id] !== undefined) {
       const price = Number(savedPrices[product.id]);
@@ -41,11 +25,6 @@ function loadProductAdminData() {
       }
     }
   });
-
-  const parsedCustomProducts = parseLocalJson(CUSTOM_PRODUCTS_STORAGE_KEY, []);
-  const customProducts = Array.isArray(parsedCustomProducts)
-    ? parsedCustomProducts
-    : [];
 
   customProducts.forEach(savedProduct => {
     const id = typeof savedProduct.id === "string"
@@ -85,34 +64,21 @@ function loadProductAdminData() {
 }
 
 function saveProductAdminData() {
-  const customProducts = products
-    .filter(product => product.isCustomProduct)
-    .map(product => ({
-      id: product.id,
-      name: product.name,
-      price: product.price
-    }));
-
-  const productPrices = {};
-
-  products.forEach(product => {
-    productPrices[product.id] = product.price;
-  });
-
-  localStorage.setItem(
-    CUSTOM_PRODUCTS_STORAGE_KEY,
-    JSON.stringify(customProducts)
-  );
-
-  localStorage.setItem(
-    PRODUCT_PRICES_STORAGE_KEY,
-    JSON.stringify(productPrices)
-  );
+  saveData();
 }
 
 function addCustomProductFromForm(event) {
   event.preventDefault();
+  const previousCount = products.length;
+  const committed = commitLocalChange(addCustomProductDraft);
+  if (committed && products.length > previousCount) {
+    customProductNameInput.value = "";
+    customProductPriceInput.value = "";
+  }
+  return committed;
+}
 
+function addCustomProductDraft() {
   const name = customProductNameInput.value.trim();
   const priceText = customProductPriceInput.value.trim();
   const price = Number(priceText);
@@ -130,13 +96,14 @@ function addCustomProductFromForm(event) {
   products.push(createCustomProduct(name, price));
   saveProductAdminData();
 
-  customProductNameInput.value = "";
-  customProductPriceInput.value = "";
-
   renderAll();
 }
 
 function updateProductPrice(product, priceInput) {
+  return commitLocalChange(() => updateProductPriceDraft(product, priceInput));
+}
+
+function updateProductPriceDraft(product, priceInput) {
   const priceText = priceInput.value.trim();
   const price = Number(priceText);
 
@@ -151,6 +118,10 @@ function updateProductPrice(product, priceInput) {
 }
 
 function deleteCustomProduct(product) {
+  return commitLocalChange(() => deleteCustomProductDraft(product));
+}
+
+function deleteCustomProductDraft(product) {
   const confirmed = confirm(`確定刪除商品「${product.name}」嗎？`);
 
   if (!confirmed) {

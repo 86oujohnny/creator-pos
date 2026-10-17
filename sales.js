@@ -1,5 +1,6 @@
 // ===== 賣出當前款式 =====
 function addToCurrentSale(product, variant) {
+  if (!canWriteData()) return;
   console.log("addToCurrentSale 被呼叫", product.id, variant);
   console.log("luckyBagMode =", luckyBagMode);
   console.log("gashaponMode =", gashaponMode);
@@ -168,6 +169,7 @@ function ensureSalesLogHasIds() {
 }
 // ===== 編輯已結帳的訂單（輕量級 - 只複製項目和設置追蹤） =====
 function editSale(saleIndex, sale) {
+  if (!canWriteData()) return;
   // 檢查：已有其他訂單在編輯
   if (editingSaleId) {
     alert("目前已有訂單正在編輯，請先完成結帳");
@@ -188,6 +190,16 @@ function editSale(saleIndex, sale) {
 
   // 1. 複製項目到 currentSale 供編輯（不修改任何持久化狀態）
   currentSale = JSON.parse(JSON.stringify(sale.items));
+  const omamori = products.find(product => product.id === "omamori");
+  currentSale.forEach(item => {
+    if (item.productId === "acrylic_stand" && item.variant === "好運守") {
+      Object.assign(item, {
+        productId: omamori.id, name: omamori.name, singlePrice: omamori.price,
+        bundleCount: omamori.bundleCount, bundlePrice: omamori.bundlePrice,
+        specialBundles: omamori.specialBundles
+      });
+    }
+  });
   
   // 2. 設置編輯追蹤（不持久化）
   editingSaleId = sale.id;
@@ -196,6 +208,10 @@ function editSale(saleIndex, sale) {
   renderAll();
 }// ==== 結帳 =====
 function checkoutCurrentSale() {
+  return commitLocalChange(checkoutSaleDraft);
+}
+
+function checkoutSaleDraft() {
   if (luckyBagMode) {
     alert("目前還在編輯福袋，請先按完成福袋");
     return;
@@ -339,6 +355,10 @@ function checkoutCurrentSale() {
 }
 // ===== 撤銷上次銷售 =====
 function undoLastSale() {
+  return commitLocalChange(undoSaleDraft);
+}
+
+function undoSaleDraft() {
   if (editingSaleId) {
     alert("目前正在編輯訂單，請先完成結帳或清空本次銷售");
     return;
@@ -441,6 +461,7 @@ function decreaseStock(productId, variantName, quantity = 1) {
 
 // ===== 計算銷售總額 =====
 function clearCurrentSale() {
+  if (!canWriteData()) return;
   currentSale = [];
 
   luckyBagMode = false;

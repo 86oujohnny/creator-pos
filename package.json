@@ -1,0 +1,11 @@
+{
+  "name": "creator-pos",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "test:browser": "node tests/storage-browser.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.61.1"
+  }
+}
