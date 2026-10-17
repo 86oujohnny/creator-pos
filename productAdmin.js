@@ -1,5 +1,7 @@
 const CUSTOM_PRODUCTS_STORAGE_KEY = "creatorPOS_customProducts";
 const PRODUCT_PRICES_STORAGE_KEY = "creatorPOS_productPrices";
+const PRODUCT_PRICES_MIGRATION_KEY = "creatorPOS_productPricesMigrationVersion";
+const PRODUCT_PRICES_MIGRATION_VERSION = 1;
 const ENABLE_PRICE_EDIT = false;
 
 function createCustomProduct(name, price) {
@@ -22,10 +24,15 @@ function loadProductAdminData() {
       ? parsedPrices
       : {};
 
+  if (Number(localStorage.getItem(PRODUCT_PRICES_MIGRATION_KEY)) < PRODUCT_PRICES_MIGRATION_VERSION) {
+    savedPrices.omamori = 120;
+    savedPrices.fox_card_holder = 280;
+    // 先儲存價格，成功後才標記遷移完成。
+    localStorage.setItem(PRODUCT_PRICES_STORAGE_KEY, JSON.stringify(savedPrices));
+    localStorage.setItem(PRODUCT_PRICES_MIGRATION_KEY, String(PRODUCT_PRICES_MIGRATION_VERSION));
+  }
+
   products.forEach(product => {
-    if (product.id === "omamori" || product.id === "fox_card_holder") {
-      return;
-    }
     if (savedPrices[product.id] !== undefined) {
       const price = Number(savedPrices[product.id]);
 

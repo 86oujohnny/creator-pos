@@ -6,8 +6,7 @@ const { test } = require("node:test");
 
 const root = path.join(__dirname, "..");
 
-function createApp() {
-  const saved = new Map();
+function createApp(saved = new Map()) {
   const app = vm.createContext({
     console: { log() {}, warn() {} },
     window: { addEventListener() {} },
@@ -92,13 +91,63 @@ test("lucky charm migration preserves stock and routes historical returns", () =
   assert.equal(app.charm.variants[0].stock, 29);
 });
 
-test("new prices survive saved overrides and all catalog image references exist", () => {
+test("first price migration updates only the required saved prices", () => {
   const app = createApp();
-  app.localStorage.setItem("creatorPOS_productPrices", JSON.stringify({ omamori: 99, fox_card_holder: 250, eevee_card_holder: 260 }));
+  const otherData = {
+    creatorPOS_stock: '{"acrylic_stand":{"好運守":37}}',
+    creatorPOS_salesLog: '[{"id":"existing","total":300}]',
+    creatorPOS_money: "300",
+    creatorPOS_customProducts: '[{"id":"custom_existing","name":"Custom","price":77}]',
+    creatorPOS_settings: '{"theme":"light"}'
+  };
+  for (const [key, value] of Object.entries(otherData)) app.localStorage.setItem(key, value);
+  app.localStorage.setItem("creatorPOS_productPrices", JSON.stringify({ omamori: 99, fox_card_holder: 250, eevee_card_holder: 260, custom_existing: 88, archived_product: 42 }));
   app.loadProductAdminData();
   assert.equal(app.charm.price, 120);
   assert.equal(app.catalog.find(p => p.id === "fox_card_holder").price, 280);
   assert.equal(app.catalog.find(p => p.id === "eevee_card_holder").price, 260);
+  assert.equal(app.catalog.find(p => p.id === "custom_existing").price, 88);
+  assert.deepEqual(JSON.parse(app.localStorage.getItem("creatorPOS_productPrices")), {
+    omamori: 120, fox_card_holder: 280, eevee_card_holder: 260, custom_existing: 88, archived_product: 42
+  });
+  assert.equal(app.localStorage.getItem("creatorPOS_productPricesMigrationVersion"), "1");
+  for (const [key, value] of Object.entries(otherData)) assert.equal(app.localStorage.getItem(key), value);
+});
+
+test("admin price changes survive repeated loads and a fresh app instance", () => {
+  const saved = new Map();
+  const app = createApp(saved);
+  app.loadProductAdminData();
+  app.updateProductPrice(app.charm, { value: "135" });
+  app.updateProductPrice(app.catalog.find(p => p.id === "fox_card_holder"), { value: "310" });
+  const savedPrices = app.localStorage.getItem("creatorPOS_productPrices");
+  for (const instance of [app, createApp(saved)]) {
+    instance.loadProductAdminData();
+    instance.loadProductAdminData();
+    assert.equal(instance.charm.price, 135);
+    assert.equal(instance.catalog.find(p => p.id === "fox_card_holder").price, 310);
+    assert.equal(instance.localStorage.getItem("creatorPOS_productPrices"), savedPrices);
+    assert.equal(instance.charm.bundleCount, 3);
+    assert.equal(instance.charm.bundlePrice, 300);
+    assert.equal(instance.fullSet.price, 900);
+    assert.equal(instance.fullSet.variants.length, 9);
+    assert.equal(instance.fullSet.variants.includes("好運守"), false);
+  }
+});
+
+test("new users initialize correct prices and migration state", () => {
+  const app = createApp();
+  app.loadProductAdminData();
+  assert.equal(app.charm.price, 120);
+  assert.equal(app.catalog.find(p => p.id === "fox_card_holder").price, 280);
+  assert.deepEqual(JSON.parse(app.localStorage.getItem("creatorPOS_productPrices")), {
+    omamori: 120, fox_card_holder: 280
+  });
+  assert.equal(app.localStorage.getItem("creatorPOS_productPricesMigrationVersion"), "1");
+});
+
+test("all catalog image references exist", () => {
+  const app = createApp();
   for (const product of app.catalog) {
     for (const item of [product, ...(product.variants || [])]) {
       if (item.image) assert.equal(fs.existsSync(path.join(root, item.image)), true, item.image);
