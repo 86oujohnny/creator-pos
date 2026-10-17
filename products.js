@@ -95,9 +95,9 @@ const products = [
     name: "狐狸大旅行包",
     price: 650,
     variants: [
-      { name: "綠色", stock: 100 },
-      { name: "米色", stock: 100 },
-      { name: "黑色", stock: 100 }
+      { name: "綠色", stock: 100, image: "images/fox_travel_bag_green.jpg" },
+      { name: "米色", stock: 100, image: "images/fox_travel_bag_beige.jpg" },
+      { name: "黑色", stock: 100, image: "images/fox_travel_bag_black.jpg" }
     ]
   },
 
