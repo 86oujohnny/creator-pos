@@ -97,6 +97,10 @@ function getStockItemsFromSale(saleItems) {
       return;
     }
 
+    // 舊訂單保留原始分類，庫存異動則指向搬移後的好運守。
+    if (item.productId === "acrylic_stand" && item.variant === "好運守") {
+      item = { ...item, productId: "omamori" };
+    }
     const product = products.find(p => p.id === item.productId);
 
     if (!product || product.trackStock === false) {

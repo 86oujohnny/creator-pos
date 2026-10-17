@@ -76,6 +76,13 @@ function loadLocalData() {
 }
 // ===== 套用儲存的庫存快照 =====
 function applyStockSnapshot(snapshot) {
+  // 舊版好運守庫存僅在新分類尚未儲存時搬移。
+  const oldLuckyCharmStock = snapshot.acrylic_stand?.["好運守"];
+  if (snapshot.omamori?.["好運守"] === undefined && oldLuckyCharmStock !== undefined) {
+    products.find(product => product.id === "omamori")
+      .variants.find(variant => variant.name === "好運守").stock = oldLuckyCharmStock;
+  }
+
   products.forEach(product => {
     const savedProductStock = snapshot[product.id];
 

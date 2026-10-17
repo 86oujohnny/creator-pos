@@ -170,6 +170,15 @@ const products = [
   },
 
   {
+    id: "fox_card_holder",
+    name: "狐狸卡套",
+    price: 280,
+    stock: 100,
+    image: "images/fox_card_holder.jpg",
+    variants: []
+  },
+
+  {
     id: "postcard_sticker_set",
     name: "明信片貼紙套組",
     price: 50,
@@ -283,14 +292,38 @@ const products = [
     name: "炫彩吊飾",
     stock: 100,
     image: "images/acrylic_stand_iridescent_charm.jpg"
+  }
+]
   },
 
   {
-    name: "好運守",
-    stock: 100,
-    image: "images/acrylic_stand_lucky_charm.jpg"
-  }
-]
+    id: "omamori",
+    name: "御守",
+    price: 120,
+    bundleCount: 3,
+    bundlePrice: 300,
+    variants: [
+      { name: "好運守", stock: 100, image: "images/omamori_lucky_charm.jpg" },
+      { name: "伊布御守", stock: 100, image: "images/omamori_eevee.jpg" },
+      { name: "火伊布御守", stock: 100, image: "images/omamori_flareon.jpg" },
+      { name: "水伊布御守", stock: 100, image: "images/omamori_vaporeon.jpg" },
+      { name: "雷伊布御守", stock: 100, image: "images/omamori_jolteon.jpg" },
+      { name: "月伊布御守", stock: 100, image: "images/omamori_umbreon.jpg" },
+      { name: "太陽伊布御守", stock: 100, image: "images/omamori_espeon.jpg" },
+      { name: "冰伊布御守", stock: 100, image: "images/omamori_glaceon.jpg" },
+      { name: "葉伊布御守", stock: 100, image: "images/omamori_leafeon.jpg" },
+      { name: "仙子伊布御守", stock: 100, image: "images/omamori_sylveon.jpg" }
+    ],
+    specialBundles: [
+      {
+        name: "伊布家族完整一套",
+        price: 900,
+        variants: [
+          "伊布御守", "火伊布御守", "水伊布御守", "雷伊布御守",
+          "月伊布御守", "太陽伊布御守", "冰伊布御守", "葉伊布御守", "仙子伊布御守"
+        ]
+      }
+    ]
   },
 
   {

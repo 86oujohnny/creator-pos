@@ -23,6 +23,9 @@ function loadProductAdminData() {
       : {};
 
   products.forEach(product => {
+    if (product.id === "omamori" || product.id === "fox_card_holder") {
+      return;
+    }
     if (savedPrices[product.id] !== undefined) {
       const price = Number(savedPrices[product.id]);
 
