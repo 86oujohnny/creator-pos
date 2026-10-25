@@ -307,11 +307,7 @@ function downloadCsvFile(blob, fileName) {
   csvDownloadUrl = url;
   link.href = url;
   link.download = fileName;
-  link.hidden = false;
-  // Keep the URL alive for browsers that defer downloading or require another tap.
-  const status = document.getElementById("csvExportStatus");
-  status.hidden = false;
-  status.textContent = "CSV 已產生；若未開始下載，請點下載連結。";
+  // Keep the URL alive for browsers that defer downloading.
   link.click();
 }
 
