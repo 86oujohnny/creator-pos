@@ -17,6 +17,7 @@ function renderAll() {
   renderProductStatistics();
   renderLuckyBagContents();
   updateLuckyBagUI();
+  renderRaffle();
   renderStock();
   renderGashaponPool();
   renderGashaponResults();
@@ -59,11 +60,21 @@ function renderCurrentSale() {
 
     deleteButton.addEventListener("click", () => {
       if (!canWriteData()) return;
+      if (raffleMode) {
+        alert("請先完成或取消摸彩編輯");
+        return;
+      }
       currentSale.splice(index, 1);
       renderAll();
     });
 
     li.appendChild(deleteButton);
+    if (item.type === "raffle") {
+      const editButton = document.createElement("button");
+      editButton.textContent = "編輯摸彩";
+      editButton.addEventListener("click", () => startRaffle(index));
+      li.appendChild(editButton);
+    }
     currentSaleList.appendChild(li);
   });
 
@@ -109,82 +120,125 @@ function renderSalesLog() {
   });
 }
 
-function getProductStatisticsRows() {
-  const statsByProductId = {};
-  const activeSalesLog = getActiveSalesLog();
+function getStatisticsSnapshot(item, productKey) {
+  const price = Number(item.singlePrice);
+  const validPrice = value => value !== null && value !== undefined && value !== "" &&
+    Number.isFinite(Number(value)) && Number(value) >= 0;
+  return {
+    ...item, productId: productKey,
+    singlePrice: Number.isFinite(price) && price >= 0 ? price : 0,
+    bundleCount: Number.isSafeInteger(item.bundleCount) && item.bundleCount > 0 ? item.bundleCount : null,
+    bundlePrice: validPrice(item.bundlePrice) ? Number(item.bundlePrice) : null,
+    // Incomplete legacy promotions must not be reconstructed from the live catalog.
+    specialBundles: (Array.isArray(item.specialBundles) ? item.specialBundles : []).filter(bundle =>
+      bundle && validPrice(bundle.price) && Array.isArray(bundle.variants) && bundle.variants.length &&
+      bundle.variants.every(variant => typeof variant === "string" && variant.length) &&
+      new Set(bundle.variants).size === bundle.variants.length
+    ).map(bundle => ({ ...bundle, price: Number(bundle.price) })),
+    gashaponResult: item.gashaponResult ? {
+      ...item.gashaponResult,
+      maxValue: validPrice(item.gashaponResult.maxValue) ? Number(item.gashaponResult.maxValue) : 0,
+      excluded: Array.isArray(item.gashaponResult.excluded) ? item.gashaponResult.excluded : []
+    } : null
+  };
+}
 
-  activeSalesLog.forEach(sale => {
-    const saleItems = Array.isArray(sale.items) ? sale.items : [];
-    const saleStatsByProductId = {};
-    const grossByProductId = {};
-    let grossTotal = 0;
+function getStatisticsSubtotal(items) {
+  return calculateGroupedItemsTotal(items.filter(item => item.isFixedPrice)) +
+    calculateNormalItemsTotal(items.filter(item => !item.isFixedPrice));
+}
 
-    saleItems.forEach(item => {
-      if (!item || typeof item !== "object") {
-        return;
-      }
+function reconcileStatisticsRounding(rows, total) {
+  const sum = rows.reduce((value, row) => value + row.revenue, 0);
+  if (sum === total) return true;
+  const tolerance = Number.EPSILON * Math.max(1, Math.abs(total), Math.abs(sum)) * Math.max(1, rows.length) * 8;
+  if (!rows.length || Math.abs(total - sum) > tolerance) return false;
+  // Keep full precision; absorb only machine error into a fractional row, not an excluded integer price.
+  let index = rows.length - 1;
+  for (let i = rows.length - 1; i >= 0; i--) {
+    if (!Number.isInteger(rows[i].revenue)) { index = i; break; }
+  }
+  const [last] = rows.splice(index, 1);
+  last.revenue = total - rows.reduce((value, row) => value + row.revenue, 0);
+  rows.push(last);
+  return true;
+}
 
-      const productId = item.productId || null;
-      const trimmedName = typeof item.name === "string"
-        ? item.name.trim()
-        : "";
-
-      if (!productId && !trimmedName) {
-        return;
-      }
-
-      const name = trimmedName || "未知商品";
-      const productKey = productId || `legacy:${name}`;
-      const itemGross = Number(item.singlePrice) || 0;
-
-      if (!saleStatsByProductId[productKey]) {
-        saleStatsByProductId[productKey] = {
-          productId: productKey,
-          name,
-          quantity: 0,
-          revenue: 0
-        };
-      }
-
-      saleStatsByProductId[productKey].quantity += 1;
-      grossByProductId[productKey] =
-        (grossByProductId[productKey] || 0) + itemGross;
-      grossTotal += itemGross;
+function getSaleStatistics(sale) {
+  const groups = new Map();
+  (Array.isArray(sale.items) ? sale.items : []).forEach(item => {
+    if (!item || typeof item !== "object") return;
+    const name = typeof item.name === "string" ? item.name.trim() : "";
+    if (!item.productId && !name) return;
+    const key = item.productId || `legacy:${name}`;
+    if (!groups.has(key)) groups.set(key, {
+      items: [], row: { productId: key, name: name || "未知商品", quantity: 0, revenue: 0 }
     });
+    const group = groups.get(key);
+    group.items.push(getStatisticsSnapshot(item, key));
+    group.row.quantity += 1;
+  });
+  const entries = [...groups.values()];
+  const items = entries.flatMap(group => group.items);
+  entries.forEach(group => { group.row.revenue = getStatisticsSubtotal(group.items); });
+  const subtotal = entries.reduce((total, group) => total + group.row.revenue, 0);
+  const savedTotal = sale.total === null || sale.total === undefined || sale.total === ""
+    ? NaN : Number(sale.total);
+  const total = Number.isFinite(savedTotal) && savedTotal >= 0 ? savedTotal : calculateSaleTotal(items);
+  let couponBudget = Math.min(calculateCouponDiscount(items), Math.max(0, subtotal - total));
+  const remainingByExclusion = new Map();
 
-    if (grossTotal <= 0) {
-      return;
+  items.forEach(item => {
+    const coupon = item.gashaponResult;
+    if (coupon?.rewardType !== "coupon" || couponBudget <= 0) return;
+    const key = createExcludedKey(coupon.excluded);
+    if (!remainingByExclusion.has(key)) {
+      remainingByExclusion.set(key, calculateCouponEligibleTotal(items, coupon.excluded));
     }
-
-    const savedSaleTotal = Number(sale.total);
-    const saleTotal = Number.isFinite(savedSaleTotal) && savedSaleTotal > 0
-      ? savedSaleTotal
-      : calculateSaleTotal(saleItems);
-
-    if (!Number.isFinite(saleTotal) || saleTotal <= 0) {
-      return;
-    }
-
-    // TODO: Coupon discounts currently use proportional revenue allocation.
-    Object.keys(grossByProductId).forEach(productKey => {
-      const ratio = grossByProductId[productKey] / grossTotal;
-      saleStatsByProductId[productKey].revenue += saleTotal * ratio;
-    });
-
-    Object.keys(saleStatsByProductId).forEach(productKey => {
-      if (!statsByProductId[productKey]) {
-        statsByProductId[productKey] = saleStatsByProductId[productKey];
-        return;
-      }
-
-      statsByProductId[productKey].quantity +=
-        saleStatsByProductId[productKey].quantity;
-      statsByProductId[productKey].revenue +=
-        saleStatsByProductId[productKey].revenue;
+    const requested = Math.min(coupon.maxValue, remainingByExclusion.get(key), couponBudget);
+    remainingByExclusion.set(key, remainingByExclusion.get(key) - requested);
+    couponBudget -= requested;
+    const eligible = entries.map(group => ({
+      row: group.row,
+      weight: Math.min(group.row.revenue, calculateCouponEligibleTotal(group.items, coupon.excluded))
+    })).filter(group => group.weight > 0);
+    const eligibleTotal = eligible.reduce((sum, group) => sum + group.weight, 0);
+    const discount = Math.min(requested, eligibleTotal);
+    let allocated = 0;
+    eligible.forEach((group, index) => {
+      const share = index === eligible.length - 1 ? discount - allocated : discount * group.weight / eligibleTotal;
+      group.row.revenue -= share;
+      allocated += share;
     });
   });
 
-  return Object.values(statsByProductId);
+  const rows = entries.map(group => group.row);
+  const difference = total - rows.reduce((sum, row) => sum + row.revenue, 0);
+  if (!reconcileStatisticsRounding(rows, total)) {
+    // Preserve the receipt total without inventing discounts on excluded/unknown products.
+    rows.push({ productId: "legacy:revenue_adjustment", name: "歷史營收調整（未能歸屬）", quantity: 0, revenue: difference });
+  }
+  return rows;
+}
+
+function getProductStatisticsRows() {
+  const stats = new Map();
+  let total = 0;
+  getActiveSalesLog().forEach(sale => {
+    const saleRows = getSaleStatistics(sale);
+    total += saleRows.reduce((sum, row) => sum + row.revenue, 0);
+    saleRows.forEach(row => {
+      if (!stats.has(row.productId)) stats.set(row.productId, { ...row });
+      else {
+        const previous = stats.get(row.productId);
+        previous.quantity += row.quantity;
+        previous.revenue += row.revenue;
+      }
+    });
+  });
+  const rows = [...stats.values()];
+  reconcileStatisticsRounding(rows, total);
+  return rows;
 }
 
 function createStatisticsList(rows, sortFn, formatFn) {

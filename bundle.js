@@ -16,6 +16,7 @@ function calculateCouponEligibleTotal(items, excluded = []) {
   const eligibleItems = items.filter(item =>
     item.productId !== "gashapon" &&
     item.productId !== "lucky_bag" &&
+    item.productId !== "raffle" &&
     !isExcludedFromCoupon(item, excluded)
   );
 

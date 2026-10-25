@@ -1,11 +1,16 @@
 // ===== 賣出當前款式 =====
 function addToCurrentSale(product, variant) {
   if (!canWriteData()) return;
+  if (raffleMode) {
+    addToRaffle(product, variant);
+    return;
+  }
   console.log("addToCurrentSale 被呼叫", product.id, variant);
   console.log("luckyBagMode =", luckyBagMode);
   console.log("gashaponMode =", gashaponMode);
 
   if (luckyBagMode) {
+  if (product.id === "raffle") return;
   if (product.id === "lucky_bag") {
     alert("福袋裡不能再放福袋");
     return;
@@ -170,6 +175,10 @@ function ensureSalesLogHasIds() {
 // ===== 編輯已結帳的訂單（輕量級 - 只複製項目和設置追蹤） =====
 function editSale(saleIndex, sale) {
   if (!canWriteData()) return;
+  if (raffleMode || luckyBagMode || gashaponMode) {
+    alert("請先完成或取消目前的內容編輯");
+    return;
+  }
   // 檢查：已有其他訂單在編輯
   if (editingSaleId) {
     alert("目前已有訂單正在編輯，請先完成結帳");
@@ -212,6 +221,10 @@ function checkoutCurrentSale() {
 }
 
 function checkoutSaleDraft() {
+  if (raffleMode) {
+    alert("目前還在編輯摸彩，請先按完成摸彩");
+    return;
+  }
   if (luckyBagMode) {
     alert("目前還在編輯福袋，請先按完成福袋");
     return;
@@ -463,6 +476,9 @@ function decreaseStock(productId, variantName, quantity = 1) {
 function clearCurrentSale() {
   if (!canWriteData()) return;
   currentSale = [];
+  raffleMode = false;
+  raffleContents = [];
+  raffleEditingIndex = null;
 
   luckyBagMode = false;
   luckyBagContents = [];

@@ -18,6 +18,8 @@
     <button id="exportCsvButton" type="button">匯出 CSV</button>
     <button id="resetAllDataButton">重置今日資料</button>
   </h2>
+  <p id="csvExportStatus" role="status" hidden></p>
+  <a id="csvDownloadLink" download="sales_log.csv" hidden>下載 sales_log.csv</a>
 
   <p>福袋模式：<span id="luckyBagModeText">關閉</span></p>
 
@@ -33,6 +35,13 @@
   <button id="startLuckyBagButton">開始編輯福袋</button>
   <button id="finishLuckyBagButton">完成福袋</button>
   <button id="cancelLuckyBagButton">取消福袋</button>
+
+  <p>摸彩模式：<span id="raffleModeText">關閉</span>｜一抽 250 元，三抽 600 元</p>
+  <h2>目前摸彩內容</h2>
+  <ul id="raffleContentsList"></ul>
+  <button id="startRaffleButton" type="button">開始編輯摸彩</button>
+  <button id="finishRaffleButton" type="button" hidden>完成摸彩</button>
+  <button id="cancelRaffleButton" type="button" hidden>取消摸彩</button>
 
   <p>扭蛋模式：<span id="gashaponModeText">關閉</span></p>
 
@@ -63,18 +72,19 @@
   </form>
   <ul id="productManagerList"></ul>
   </fieldset>
-<script src="config.js?v=storage-safety-1"></script>
-<script src="products.js?v=storage-safety-1"></script>
-<script src="state.js?v=storage-safety-1"></script>
-<script src="dom.js?v=storage-safety-1"></script>
-<script src="bundle.js?v=storage-safety-1"></script>
-<script src="render.js?v=storage-safety-1"></script>
-<script src="luckyBag.js?v=storage-safety-1"></script>
-<script src="gashapon.js?v=storage-safety-1"></script>
-<script src="sales.js?v=storage-safety-1"></script>
-<script src="productAdmin.js?v=storage-safety-1"></script>
-<script src="storage.js?v=storage-safety-1"></script>
-<script src="session.js?v=storage-safety-1"></script>
-<script src="script.js?v=storage-safety-1"></script>
+<script src="config.js?v=raffle-csv-1"></script>
+<script src="products.js?v=raffle-csv-1"></script>
+<script src="state.js?v=raffle-csv-1"></script>
+<script src="dom.js?v=raffle-csv-1"></script>
+<script src="bundle.js?v=raffle-csv-1"></script>
+<script src="render.js?v=raffle-csv-1"></script>
+<script src="luckyBag.js?v=raffle-csv-1"></script>
+<script src="raffle.js?v=raffle-csv-1"></script>
+<script src="gashapon.js?v=raffle-csv-1"></script>
+<script src="sales.js?v=raffle-csv-1"></script>
+<script src="productAdmin.js?v=raffle-csv-1"></script>
+<script src="storage.js?v=raffle-csv-1"></script>
+<script src="session.js?v=raffle-csv-1"></script>
+<script src="script.js?v=raffle-csv-1"></script>
 </body>
 </html>
