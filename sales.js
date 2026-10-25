@@ -313,6 +313,13 @@ function checkoutSaleDraft() {
     return;
   }
 
+  let total;
+  try { total = calculateSaleTotal(currentSale); }
+  catch (error) {
+    alert(error.message);
+    return;
+  }
+
   // ===== 驗證通過，開始改變狀態 =====
   
   if (editingSaleId) {
@@ -334,8 +341,6 @@ function checkoutSaleDraft() {
   newStockItems.forEach(item => {
     decreaseStock(item.productId, item.variant, item.quantity);
   });
-
-  const total = calculateSaleTotal(currentSale);
 
   money += total;
   moneyText.textContent = money;

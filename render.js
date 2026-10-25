@@ -78,8 +78,11 @@ function renderCurrentSale() {
     currentSaleList.appendChild(li);
   });
 
-  const total = calculateSaleTotal(currentSale);
-  currentSaleTotal.textContent = total;
+  try {
+    currentSaleTotal.textContent = calculateSaleTotal(currentSale);
+  } catch (error) {
+    currentSaleTotal.textContent = error.message;
+  }
 }
 // ===== 顯示銷售紀錄 =====
 function renderSalesLog() {
@@ -135,11 +138,7 @@ function getStatisticsSnapshot(item, productKey) {
       bundle.variants.every(variant => typeof variant === "string" && variant.length) &&
       new Set(bundle.variants).size === bundle.variants.length
     ).map(bundle => ({ ...bundle, price: Number(bundle.price) })),
-    gashaponResult: item.gashaponResult ? {
-      ...item.gashaponResult,
-      maxValue: validPrice(item.gashaponResult.maxValue) ? Number(item.gashaponResult.maxValue) : 0,
-      excluded: Array.isArray(item.gashaponResult.excluded) ? item.gashaponResult.excluded : []
-    } : null
+    gashaponResult: item.gashaponResult ? { ...item.gashaponResult } : null
   };
 }
 
@@ -184,33 +183,18 @@ function getSaleStatistics(sale) {
   const subtotal = entries.reduce((total, group) => total + group.row.revenue, 0);
   const savedTotal = sale.total === null || sale.total === undefined || sale.total === ""
     ? NaN : Number(sale.total);
-  const total = Number.isFinite(savedTotal) && savedTotal >= 0 ? savedTotal : calculateSaleTotal(items);
-  let couponBudget = Math.min(calculateCouponDiscount(items), Math.max(0, subtotal - total));
-  const remainingByExclusion = new Map();
-
-  items.forEach(item => {
-    const coupon = item.gashaponResult;
-    if (coupon?.rewardType !== "coupon" || couponBudget <= 0) return;
-    const key = createExcludedKey(coupon.excluded);
-    if (!remainingByExclusion.has(key)) {
-      remainingByExclusion.set(key, calculateCouponEligibleTotal(items, coupon.excluded));
-    }
-    const requested = Math.min(coupon.maxValue, remainingByExclusion.get(key), couponBudget);
-    remainingByExclusion.set(key, remainingByExclusion.get(key) - requested);
-    couponBudget -= requested;
-    const eligible = entries.map(group => ({
-      row: group.row,
-      weight: Math.min(group.row.revenue, calculateCouponEligibleTotal(group.items, coupon.excluded))
-    })).filter(group => group.weight > 0);
-    const eligibleTotal = eligible.reduce((sum, group) => sum + group.weight, 0);
-    const discount = Math.min(requested, eligibleTotal);
-    let allocated = 0;
-    eligible.forEach((group, index) => {
-      const share = index === eligible.length - 1 ? discount - allocated : discount * group.weight / eligibleTotal;
-      group.row.revenue -= share;
-      allocated += share;
-    });
-  });
+  let allocation;
+  try { allocation = allocateCouponDiscount(items); }
+  catch {
+    // Malformed legacy coupons have no inferable eligibility. Keep their receipt
+    // difference visible rather than widening exclusions or changing history.
+    allocation = { discount: 0, allocations: [] };
+  }
+  const total = Number.isFinite(savedTotal) && savedTotal >= 0 ? savedTotal : subtotal - allocation.discount;
+  if (allocation.discount > Math.max(0, subtotal - total)) {
+    allocation = allocateCouponDiscount(items, Math.max(0, subtotal - total));
+  }
+  allocation.allocations.forEach(slot => { groups.get(slot.productId).row.revenue -= slot.discount; });
 
   const rows = entries.map(group => group.row);
   const difference = total - rows.reduce((sum, row) => sum + row.revenue, 0);
