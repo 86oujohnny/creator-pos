@@ -262,6 +262,40 @@ const server = http.createServer((request, response) => {
     }
     console.log("PASS paid raffle edit, full refund, stock restoration and actual refund-only audit CSV download");
 
+    {
+      const c = await context(), page = await c.newPage();await page.goto(url);await ready(page);
+      const productCard = name => page.locator("#productArea > div").filter({ has: page.getByRole("heading", { name, exact: true }) });
+      for (let i=0;i<3;i++) {
+        await page.locator("#startRaffleButton").click();
+        await productCard("滴膠貼紙").getByRole("button").click();
+        await page.locator("#finishRaffleButton").click();
+      }
+      await productCard("毛絨徽章開瓶器").getByRole("button").click();
+      assert.equal(await page.locator("#currentSaleTotal").textContent(),"700");
+      await page.locator("#checkoutButton").click();await page.reload();await ready(page);
+      assert.deepEqual(await page.evaluate(()=>Object.fromEntries(getProductStatisticsRows().map(row=>[row.productId,row.revenue]))),{raffle:600,plush_badge_bottle_opener:100});
+      await page.locator("#productStatisticsArea").getByText("摸彩：600 元，3 個",{exact:true}).waitFor();
+      await page.locator("#productStatisticsArea").getByText("毛絨徽章開瓶器：100 元，1 個",{exact:true}).waitFor();
+      await page.locator("#productStatisticsArea").screenshot({path:"/tmp/creator-pos-statistics.png"});
+      const saved = await state(page);
+      await page.evaluate(()=>{products.forEach(p=>{p.price=9999;p.bundlePrice=1});renderProductStatistics()});
+      assert.equal(await page.evaluate(()=>getProductStatisticsRows().reduce((sum,row)=>sum+row.revenue,0)),700);
+      assert.deepEqual(await state(page),saved);
+      await page.locator("#salesLogList button").click();
+      await page.locator("#currentSaleList").getByRole("button",{name:"刪除",exact:true}).first().click();
+      await page.locator("#checkoutButton").click();
+      assert.deepEqual(await page.evaluate(()=>Object.fromEntries(getProductStatisticsRows().map(row=>[row.productId,row.revenue]))),{raffle:500,plush_badge_bottle_opener:100});
+      await page.locator("#salesLogList button").click();
+      while (await page.locator("#currentSaleList > li").count()) {
+        await page.locator("#currentSaleList").getByRole("button",{name:"刪除",exact:true}).first().click();
+      }
+      await page.locator("#checkoutButton").click();await page.reload();await ready(page);
+      assert.equal((await state(page)).money,0);
+      assert.deepEqual(await page.evaluate(()=>getProductStatisticsRows()),[]);
+      await c.close();
+    }
+    console.log("PASS statistics UI: raffle 600/opener 100, reload, catalog changes, edited 500/100 and refunded zero");
+
     for (const seed of [
       { ...legacy, creatorPOS_productPricesMigrationVersion: "2" },
       { ...legacy, creatorPOS_salesLog: "{" }
