@@ -1,6 +1,10 @@
 // ==== 扭蛋模式 =====
 function startGashapon() {
   if (!canWriteData()) return;
+  if (raffleMode) {
+    alert("請先完成或取消摸彩");
+    return;
+  }
 
   if (gashaponMode) {
     return;

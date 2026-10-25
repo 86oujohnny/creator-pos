@@ -1,5 +1,16 @@
 const products = [
   {
+    id: "raffle",
+    name: "摸彩",
+    price: 250,
+    bundleCount: 3,
+    bundlePrice: 600,
+    isFixedPrice: true,
+    hiddenFromProductButtons: true,
+    trackStock: false,
+    variants: []
+  },
+  {
     id: "lucky_bag",
     name: "福袋",
     price: 550,
@@ -150,6 +161,7 @@ const products = [
     name: "肉球抱抱狐玩偶吊飾",
     price: 320,
     stock: 100,
+    image: "images/fox_plush_keychain.jpg",
     variants: []
   },
 
@@ -158,6 +170,7 @@ const products = [
     name: "狐狸擦手巾",
     price: 350,
     stock: 100,
+    image: "images/fox_towel.jpg",
     variants: []
   },
 
@@ -166,6 +179,7 @@ const products = [
     name: "伊布卡套",
     price: 250,
     stock: 100,
+    image: "images/eevee_card_holder.jpg",
     variants: []
   },
 
@@ -200,6 +214,23 @@ const products = [
     name: "狐狸地毯",
     price: 450,
     stock: 100,
+    image: "images/fox_rug.jpg",
+    variants: []
+  },
+  {
+    id: "epoxy_sticker",
+    name: "滴膠貼紙",
+    price: 60,
+    stock: 100,
+    image: "images/epoxy_sticker.jpg",
+    variants: []
+  },
+  {
+    id: "plush_badge_bottle_opener",
+    name: "毛絨徽章開瓶器",
+    price: 100,
+    stock: 100,
+    image: "images/plush_badge_bottle_opener.jpg",
     variants: []
   },
 

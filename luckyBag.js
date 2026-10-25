@@ -5,6 +5,11 @@ function startLuckyBag() {
     return;
   }
 
+  if (raffleMode) {
+    alert("請先完成或取消摸彩");
+    return;
+  }
+
   if (gashaponMode) {
     alert("目前正在記錄扭蛋，請先完成或取消扭蛋");
     return;

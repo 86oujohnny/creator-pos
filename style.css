@@ -58,6 +58,12 @@ button {
   border: 1px solid #ddd;
 }
 
+button:disabled,
+fieldset:disabled button {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .variant-image {
   width: 40px;
   height: 40px;

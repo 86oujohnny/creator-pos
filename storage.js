@@ -95,13 +95,15 @@ function restoreProducts(snapshot) {
 
 function captureRuntime() {
   return JSON.parse(JSON.stringify({ products, money, salesLog, currentSale, editingSaleId,
-    luckyBagMode, luckyBagContents, gashaponMode, gashaponResults }));
+    luckyBagMode, luckyBagContents, gashaponMode, gashaponResults,
+    raffleMode, raffleContents, raffleEditingIndex }));
 }
 
 function restoreRuntime(state) {
   restoreProducts(state.products);
   ({ money, salesLog, currentSale, editingSaleId, luckyBagMode,
-    luckyBagContents, gashaponMode, gashaponResults } = state);
+    luckyBagContents, gashaponMode, gashaponResults,
+    raffleMode, raffleContents, raffleEditingIndex } = state);
   if (moneyText) moneyText.textContent = money;
 }
 
@@ -171,6 +173,9 @@ function loadLocalData() {
     luckyBagMode = gashaponMode = false;
     luckyBagContents = [];
     gashaponResults = [];
+    raffleMode = false;
+    raffleContents = [];
+    raffleEditingIndex = null;
     if (raw === null || readMigrationVersion(data.priceMigrationVersion) < PRODUCT_PRICES_MIGRATION_VERSION) {
       persistState(createPersistentState());
     }
@@ -290,24 +295,24 @@ function getActiveSalesLog() {
 
 // ===== 匯出 CSV 工具函式 =====
 function escapeCsvCell(cell) {
-  return `"${String(cell).replaceAll('"', '""')}"`;
+  return `"${String(cell ?? "").replaceAll('"', '""')}"`;
 }
 // ===== 下載 CSV 檔案 =====
+let csvDownloadUrl = null;
+
 function downloadCsvFile(blob, fileName) {
+  const link = document.getElementById("csvDownloadLink");
   const url = URL.createObjectURL(blob);
-
-  const link = document.createElement("a");
+  if (csvDownloadUrl) URL.revokeObjectURL(csvDownloadUrl);
+  csvDownloadUrl = url;
   link.href = url;
-  link.target = "_blank";
   link.download = fileName;
-
-  document.body.appendChild(link);
+  link.hidden = false;
+  // Keep the URL alive for browsers that defer downloading or require another tap.
+  const status = document.getElementById("csvExportStatus");
+  status.hidden = false;
+  status.textContent = "CSV 已產生；若未開始下載，請點下載連結。";
   link.click();
-  document.body.removeChild(link);
-
-  setTimeout(() => {
-    URL.revokeObjectURL(url);
-  }, 1000);
 }
 
 function exportCsvFile(blob) {
@@ -317,6 +322,7 @@ function exportCsvFile(blob) {
 const SALE_TYPE_LABELS = {
   gashapon: "扭蛋",
   lucky_bag: "福袋",
+  raffle: "摸彩",
   special_bundle: "特殊套組",
   normal: "一般商品"
 };
@@ -342,15 +348,58 @@ function getSaleItemType(item) {
 }
 
 function getContentsRowType(item) {
+  if (getSaleItemType(item) === "摸彩") return "摸彩內容";
   return getSaleItemType(item) === "特殊套組"
     ? "特殊套組內容"
     : "福袋內容";
 }
+
+function getCsvSaleStatus(sale) {
+  return sale.status === "inactive" ? (sale.refunded ? "已退貨" : "已替換") : "有效";
+}
+
+function getCsvStockQuantity(item) {
+  if (item.contents || item.bundleItems) return 0;
+  return getStockItemsFromSale([item]).reduce((total, stock) => total + stock.quantity, 0);
+}
+
+function appendCsvContents(rows, sale, saleIndex, item) {
+  const contents = item.contents || (item.bundleItems || []).map(variant => ({
+    productId: item.productId, name: item.name, variant, singlePrice: ""
+  }));
+  contents.forEach(content => {
+    rows.push([
+      sale.id || saleIndex + 1, sale.time, getContentsRowType(item), content.name,
+      content.variant, content.singlePrice, "", `${item.name}-${item.variant}`,
+      getSnapshotStock(sale.stockSnapshot, content.productId, content.variant),
+      getCsvSaleStatus(sale), 0, sale.status === "inactive" ? 0 : getCsvStockQuantity(content), ""
+    ]);
+    appendCsvContents(rows, sale, saleIndex, content);
+  });
+}
 // ===== 匯出銷售紀錄 CSV =====
 function exportSalesLogToCSV() {
-  const activeSalesLog = getActiveSalesLog();
-  
-  if (activeSalesLog.length === 0) {
+  if (!canWriteData()) return;
+  const status = document.getElementById("csvExportStatus");
+  const link = document.getElementById("csvDownloadLink");
+  status.hidden = true;
+  link.hidden = true;
+  try {
+    const blob = createSalesLogCsv();
+    if (blob) exportCsvFile(blob);
+    else {
+      status.hidden = false;
+      status.textContent = "目前沒有銷售紀錄可以匯出，請先完成結帳。";
+    }
+  } catch (error) {
+    status.hidden = false;
+    status.textContent = `CSV 匯出失敗：${error.message}。訂單資料未變更，請重試。`;
+    alert(status.textContent);
+  }
+}
+
+function createSalesLogCsv() {
+  if (salesLog.length === 0) {
     alert("目前沒有銷售紀錄可以匯出");
     return;
   }
@@ -365,59 +414,56 @@ function exportSalesLogToCSV() {
       "單價",
       "該筆總額",
       "內容來源",
-      "結帳後庫存"
+      "結帳後庫存",
+      "訂單狀態",
+      "銷售數量",
+      "出庫數量",
+      "原成交總額"
     ]
   ];
 
-  activeSalesLog.forEach((sale, saleIndex) => {
+  salesLog.forEach((sale, saleIndex) => {
+    const active = sale.status !== "inactive";
+    // Only summary rows contribute to net revenue; inactive rows remain as an audit trail.
+    rows.push([
+      sale.id || saleIndex + 1, sale.time, "訂單合計", "", "", "",
+      active ? sale.total : 0,
+      sale.replaces ? `取代：${sale.replaces}` : sale.replacedBy ? `被取代：${sale.replacedBy}` : "",
+      "", getCsvSaleStatus(sale), 0, 0, sale.total
+    ]);
     sale.items.forEach(item => {
       rows.push([
-        saleIndex + 1,
+        sale.id || saleIndex + 1,
         sale.time,
         getSaleItemType(item),
         item.name,
         item.variant,
         item.singlePrice,
-        sale.total,
+        "",
         "",
         getSnapshotStock(
           sale.stockSnapshot,
           item.productId,
           item.variant
-        )
+        ),
+        getCsvSaleStatus(sale),
+        active ? 1 : 0,
+        active ? getCsvStockQuantity(item) : 0,
+        ""
       ]);
 
-      if (item.contents) {
-        item.contents.forEach(content => {
-          rows.push([
-            saleIndex + 1,
-            sale.time,
-            getContentsRowType(item),
-            content.name,
-            content.variant,
-            content.singlePrice,
-            "",
-            `${item.name}-${item.variant}`,
-            getSnapshotStock(
-              sale.stockSnapshot,
-              content.productId,
-              content.variant
-            )
-          ]);
-        });
-      }
+      appendCsvContents(rows, sale, saleIndex, item);
     });
   });
 
   const csvContent = rows
     .map(row => row.map(escapeCsvCell).join(","))
-    .join("\n");
+    .join("\r\n");
 
-  const blob = new Blob(["\uFEFF" + csvContent], {
+  return new Blob(["\uFEFF" + csvContent], {
     type: "text/csv;charset=utf-8;"
   });
 
-  exportCsvFile(blob);
 }
 // ===== 重置所有資料 =====
 function resetAllData() {

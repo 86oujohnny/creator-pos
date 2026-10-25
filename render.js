@@ -17,6 +17,7 @@ function renderAll() {
   renderProductStatistics();
   renderLuckyBagContents();
   updateLuckyBagUI();
+  renderRaffle();
   renderStock();
   renderGashaponPool();
   renderGashaponResults();
@@ -59,11 +60,21 @@ function renderCurrentSale() {
 
     deleteButton.addEventListener("click", () => {
       if (!canWriteData()) return;
+      if (raffleMode) {
+        alert("請先完成或取消摸彩編輯");
+        return;
+      }
       currentSale.splice(index, 1);
       renderAll();
     });
 
     li.appendChild(deleteButton);
+    if (item.type === "raffle") {
+      const editButton = document.createElement("button");
+      editButton.textContent = "編輯摸彩";
+      editButton.addEventListener("click", () => startRaffle(index));
+      li.appendChild(editButton);
+    }
     currentSaleList.appendChild(li);
   });
 
