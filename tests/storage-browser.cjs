@@ -217,10 +217,12 @@ const server = http.createServer((request, response) => {
       assert.equal((content.match(/"600"/g) || []).length, 2);
       assert.deepEqual(await page.evaluate(() => window.__csvUrls.revoked), []);
       assert.equal(await page.locator("#csvDownloadLink").getAttribute("target"), null);
+      assert.equal(await page.locator("#csvDownloadLink").isVisible(), false);
+      assert.equal(await page.locator("#csvDownloadLink").textContent(), "");
+      assert.equal(await page.locator("#csvExportStatus").isVisible(), false);
+      assert.equal(await page.getByText("CSV 已產生；若未開始下載，請點下載連結。", { exact: true }).count(), 0);
       const repeated = page.waitForEvent("download");
-      await page.locator("#csvDownloadLink").click(); await repeated;
-      const replaced = page.waitForEvent("download");
-      await page.locator("#exportCsvButton").click();await replaced;
+      await page.locator("#exportCsvButton").click(); await repeated;
       assert.equal(await page.evaluate(() => window.__csvUrls.created.length), 2);
       assert.equal(await page.evaluate(() => window.__csvUrls.revoked.length), 1);
       assert.equal(await page.evaluate(() => window.__csvUrls.revoked[0] === window.__csvUrls.created[0]), true);
